@@ -1,5 +1,5 @@
 [package]
-name = "random-walk"
+name = "random_walk"
 version = "0.1.0"
 edition = "2021"
 
@@ -9,3 +9,4 @@ edition = "2021"
 image = "0.24.6"
 minifb = "0.24.0"
 noise = "0.8.2"
+stopwatch = "0.0.7"
