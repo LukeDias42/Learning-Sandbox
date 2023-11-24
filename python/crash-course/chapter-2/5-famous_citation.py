@@ -1,0 +1,1 @@
+print("Frank Herbert once said: \"There is no real ending. It’s just the place where you stop the story.\".")

@@ -1,0 +1,7 @@
+print(4*2)
+print(2**3)
+print(3**2-1)
+print(7*2-6)
+print(2**10/2**7)
+print(2*2*2)
+print(2*1024/2**8)
