@@ -6,15 +6,19 @@ Every time we want to move a disc N to the middle, we have to completely solve N
 
 So:
 $$T_N = 3T_{N-1} + 2$$
+
 Induction step:
-$$
-T_N = 3(3^{N-1}-1) + 2\\
-T_N = 3^N-3 + 2 = 3^N - 1\\
-\text{$\:$ Or $\: T_N + 1 = 3T_{N-1}+3$}\\
-\text{$\:$ Considering $\: U_0 = 1 \:$ then $\: U_N = 3U_{N-1}\Rightarrow3^N$}\\
-U_N = 3N\Rightarrow T_N + 1 = 3^N\Rightarrow T_N=3^N-1\\
-T_N = 3^{N-1}
-$$
+$$T_N = 3(3^{N-1}-1) + 2$$
+
+$$T_N = 3^N-3 + 2 = 3^N - 1$$
+
+$$\text{Or\: $T_N + 1 = 3T_{N-1}+3$}$$
+
+$$\text{Considering\: $U_0 = 1$ \:then\: $U_N = 3U_{N-1}\Rightarrow3^N$}$$
+
+$$U_N = 3N\Rightarrow T_N + 1 = 3^N\Rightarrow T_N=3^N-1$$
+
+$$T_N = 3^{N-1}.$$
 
 ### Question 3:
 Showthat, in the process of transferring a tower under the restrictions of the preceding exercise, we will actually encounter every properly stacked arrangement of n disks on three pegs.
