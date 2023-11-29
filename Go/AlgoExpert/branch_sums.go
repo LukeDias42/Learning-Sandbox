@@ -8,11 +8,11 @@ type BinaryTree struct {
 
 func BranchSums(root *BinaryTree) []int {
 	sums := []int{}
-	root.CalculateSums(&sums, 0)
+	root.calculateSums(&sums, 0)
 	return sums
 }
 
-func (node *BinaryTree) CalculateSums(sums *[]int, totalNodeSum int) {
+func (node *BinaryTree) calculateSums(sums *[]int, totalNodeSum int) {
 	if node == nil {
 		return
 	}
@@ -21,6 +21,9 @@ func (node *BinaryTree) CalculateSums(sums *[]int, totalNodeSum int) {
 	if node.isLeafNode() {
 		*sums = append(*sums, totalNodeSum)
 	}
+
+	node.Left.calculateSums(sums, totalNodeSum);
+	node.Right.calculateSums(sums, totalNodeSum);
 }
 
 func (node *BinaryTree) isLeafNode() bool {
