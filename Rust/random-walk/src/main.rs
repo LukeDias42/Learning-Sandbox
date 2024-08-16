@@ -1,21 +1,17 @@
-mod image_walk;
 mod animation_walk;
-mod splitmix;
+mod image_walk;
 mod move_square;
-use image_walk::random_image;
+mod splitmix;
 use animation_walk::random_animation;
+use image_walk::random_image;
+use std::env;
 
 fn main() {
-    random_image(
-        "test",      // filename
-        3920,        // width 
-        2160,        // height
-        0x00_FFFFFF, // repetition
-        5,           // square size
-        1);          // color change speed
-    // random_animation(600, 600);
+    let args: Vec<String> = env::args().collect();
+    let random_walk_type = args.get(1).and_then(|s| s.parse().ok()).unwrap_or(0);
+    if random_walk_type == 0 {
+        random_image("test", 3920, 2160, 0x00_FFFFFF, 5, 1);
+    } else {
+        random_animation(600, 600);
+    }
 }
-
-
-
-
