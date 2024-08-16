@@ -1,12 +1,18 @@
-use perlin::{ PermutationTable, NoiseMap };
 use minifb::{Key, Window, WindowOptions};
+use perlin::{NoiseMap, PermutationTable};
+use std::env;
 
 fn main() {
-    // perlin::generate_perlin_image(
-    // NoiseMap::new((1280, 720), (-16.0, 16.0), (-9.0, 9.0)), 
-    // "perlin.png"
-    // );
-    show_animation();
+    let args: Vec<String> = env::args().collect();
+    let perlin_noise_type = args.get(1).and_then(|s| s.parse().ok()).unwrap_or(0);
+    if perlin_noise_type == 0 {
+        show_animation();
+    } else {
+        perlin::generate_perlin_image(
+            NoiseMap::new((1920, 1080), (-16.0, 16.0), (-9.0, 9.0)),
+            "perlin.png",
+        );
+    }
 }
 
 fn show_animation() {
@@ -14,15 +20,10 @@ fn show_animation() {
 
     let hasher = PermutationTable::new();
     // Create a window to display the image
-    let mut window = Window::new(
-        "Perlin Square",
-        SIZE,
-        SIZE,
-        WindowOptions::default(),
-    )
-    .unwrap_or_else(|e| {
-        panic!("{}", e);
-    });
+    let mut window = Window::new("Perlin Square", SIZE, SIZE, WindowOptions::default())
+        .unwrap_or_else(|e| {
+            panic!("{}", e);
+        });
 
     let square_size = 15;
     let mut counter = 0.0;
@@ -42,5 +43,4 @@ fn show_animation() {
         window.update_with_buffer(&buffer, SIZE, SIZE).unwrap();
         counter += 1.0 / SIZE as f64;
     }
-
 }
