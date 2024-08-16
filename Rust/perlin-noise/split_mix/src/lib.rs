@@ -21,7 +21,7 @@ impl SplitMix {
         }
     }
 
-    pub fn next(&mut self) -> u64 {
+    pub fn next_rand(&mut self) -> u64 {
         self.state = self.state.wrapping_add(0x9e3779b97f4a7c15);
         let mut z = self.state;
         z = (z ^ (z >> 30)).wrapping_mul(0xbf58476d1ce4e5b9_u64);
@@ -30,7 +30,7 @@ impl SplitMix {
     }
 
     pub fn next_float(&mut self) -> f64 {
-        (self.next() as f64) / 2_f64.powi(64)
+        (self.next_rand() as f64) / 2_f64.powi(64)
     }
 
     pub fn rand(&mut self, max: u64) -> u64 {
@@ -42,16 +42,14 @@ impl SplitMix {
         r + min
     }
 
-    pub fn shuffle_vec<T>(&mut self, vec: &mut Vec<T>)
+    pub fn shuffle_vec<T>(&mut self, vec: &mut [T])
     where
         T: Copy,
     {
         let len = vec.len() as u64;
         for i in 0..len {
             let j = self.rand_range(i, len);
-            let temp = vec[i as usize];
-            vec[i as usize] = vec[j as usize];
-            vec[j as usize] = temp;
+            vec.swap(i as usize, j as usize);
         }
     }
 }
@@ -65,7 +63,7 @@ mod tests {
         let mut sm = SplitMix::new_from(1234567);
         let mut results = Vec::new();
         for _ in 0..5 {
-            results.push(sm.next())
+            results.push(sm.next_rand())
         }
         assert_eq!(
             results,
@@ -87,5 +85,11 @@ mod tests {
             results[sm.rand(5) as usize] += 1
         }
         assert_eq!(results, vec![20027, 19892, 20073, 19978, 20030]);
+    }
+}
+
+impl Default for SplitMix {
+    fn default() -> Self {
+        Self::new()
     }
 }
