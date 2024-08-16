@@ -7,25 +7,17 @@ fn main() {
 
 fn get_sizes() -> (usize, usize) {
     let args: Vec<String> = env::args().collect();
-    let columns = if args.len() > 1 {
-        args[1].parse::<usize>().unwrap_or(5)
-    } else {
-        5
-    };
-    let rows = if args.len() > 2 {
-        args[2].parse::<usize>().unwrap_or(5)
-    } else {
-        5
-    };
-
-    (columns, rows)
+    let columns = args.get(1).and_then(|s| s.parse().ok()).unwrap_or(5);
+    let lines = args.get(2).and_then(|s| s.parse().ok()).unwrap_or(5);
+    (columns, lines)
 }
 
 fn print_zig_zag_array(columns: usize, rows: usize) {
     let digits = calculate_digits(columns * rows);
+    let r = rows as isize;
     for y in 0..rows {
         for x in 0..columns {
-            print! {"{:>1$}", calculate_zig_zag_value(x as isize, y as isize, rows as isize), digits};
+            print! {"{:>1$}", calculate_zig_zag_value(x as isize, y as isize, r), digits};
         }
         println!();
     }
