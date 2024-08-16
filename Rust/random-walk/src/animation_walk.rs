@@ -1,6 +1,6 @@
-use minifb::{Key, Window, WindowOptions};
-use super::splitmix::SplitMix;
 use super::move_square::update_position;
+use super::splitmix::SplitMix;
+use minifb::{Key, Window, WindowOptions};
 
 pub fn random_animation(width: usize, height: usize) {
     let mut window = Window::new("Random Walk", width, height, WindowOptions::default())
@@ -23,7 +23,9 @@ pub fn random_animation(width: usize, height: usize) {
             }
         }
         color += c_acc;
-        if color <= 0 || color >= 0xffffff { c_acc *= -1; }
+        if color <= 0 || color >= 0xffffff {
+            c_acc *= -1;
+        }
         window.update_with_buffer(&buffer, width, width).unwrap();
         pos = update_position(&mut sm_pos, pos, width as u32, width as u32, square_size);
     }
