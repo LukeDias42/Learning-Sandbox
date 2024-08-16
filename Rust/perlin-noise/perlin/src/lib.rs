@@ -114,8 +114,8 @@ impl PermutationTable {
         let mut permutation: Vec<u64> = (0..=255).collect();
         sm.shuffle_vec(&mut permutation);
         let mut pt = PermutationTable { values: Vec::new() };
-        for i in 0..256 {
-            pt.values.push(permutation[i] as u8)
+        for perm in permutation {
+            pt.values.push(perm as u8)
         }
         pt
     }
@@ -125,8 +125,8 @@ impl PermutationTable {
         let mut permutation: Vec<u64> = (0..=255).collect();
         sm.shuffle_vec(&mut permutation);
         let mut pt = PermutationTable { values: Vec::new() };
-        for i in 0..256 {
-            pt.values.push(permutation[i] as u8)
+        for perm in permutation {
+            pt.values.push(perm as u8)
         }
         pt
     }
@@ -138,5 +138,11 @@ impl PermutationTable {
             .reduce(|a, b| self.values[a] as usize ^ b)
             .unwrap();
         self.values[index] as usize
+    }
+}
+
+impl Default for PermutationTable {
+    fn default() -> Self {
+        Self::new()
     }
 }
