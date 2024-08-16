@@ -1,5 +1,8 @@
+use core::{
+    f64,
+    ops::{Add, Mul},
+};
 use image::{Rgb, RgbImage};
-use core::{f64, ops::{Add, Mul}};
 use split_mix::SplitMix;
 
 pub fn generate_perlin_image(noise_map: NoiseMap, file_name: &str) {
@@ -26,7 +29,7 @@ pub fn generate_perlin_image(noise_map: NoiseMap, file_name: &str) {
     for i in map {
         pixels.push(((i * 0.5 + 0.5).clamp(0.0, 1.0) * 255.0) as u8);
     }
-    let image = RgbImage::from_fn(width as u32, height as u32, |x ,y| {
+    let image = RgbImage::from_fn(width as u32, height as u32, |x, y| {
         let shade = pixels[(x + y * width as u32) as usize];
         Rgb([shade, shade, shade])
     });
@@ -49,24 +52,25 @@ pub fn perlin_2d(point: (f64, f64), hasher: &PermutationTable) -> f64 {
 
     let curve = (fade(distance.0), fade(distance.1));
 
-    let result = lerp(
-        lerp(g00, g01, curve.1),
-        lerp(g10, g11, curve.1),
-        curve.0,
-    ) * SCALE_FACTOR;
+    let result = lerp(lerp(g00, g01, curve.1), lerp(g10, g11, curve.1), curve.0) * SCALE_FACTOR;
 
     result.clamp(-1.0, 1.0)
 }
 
-fn gradient(offset: (isize, isize), distance: (f64, f64), corner: (isize, isize), hasher: &PermutationTable) -> f64 {
+fn gradient(
+    offset: (isize, isize),
+    distance: (f64, f64),
+    corner: (isize, isize),
+    hasher: &PermutationTable,
+) -> f64 {
     let point = (distance.0 - offset.0 as f64, distance.1 - offset.1 as f64);
     let to_hash = [corner.0 + offset.0, corner.1 + offset.1];
     let hash = hasher.hash(&to_hash);
 
     match hash & 0b11 {
-        0 =>  point.0 + point.1, // ( 1,  1)
+        0 => point.0 + point.1,  // ( 1,  1)
         1 => -point.0 + point.1, // (-1,  1)
-        2 =>  point.0 - point.1, // ( 1, -1)
+        2 => point.0 - point.1,  // ( 1, -1)
         3 => -point.0 - point.1, // (-1, -1)
         _ => unreachable!(),
     }
@@ -77,8 +81,8 @@ fn fade(t: f64) -> f64 {
 }
 
 fn lerp<T>(a: T, b: T, alpha: f64) -> T
-where 
-    T: Mul<f64, Output = T> + Add<Output = T>
+where
+    T: Mul<f64, Output = T> + Add<Output = T>,
 {
     b * alpha + a * (1_f64 - alpha)
 }
@@ -94,23 +98,25 @@ impl NoiseMap {
         Self {
             size,
             x_bound,
-            y_bound
+            y_bound,
         }
     }
 }
 
 #[derive(Debug)]
 pub struct PermutationTable {
-    values: Vec<u8> 
+    values: Vec<u8>,
 }
 
 impl PermutationTable {
-     pub fn new_from(seed: u64) -> Self {
+    pub fn new_from(seed: u64) -> Self {
         let mut sm = SplitMix::new_from(seed);
         let mut permutation: Vec<u64> = (0..=255).collect();
         sm.shuffle_vec(&mut permutation);
         let mut pt = PermutationTable { values: Vec::new() };
-        for i in 0..256 { pt.values.push(permutation[i] as u8) };
+        for i in 0..256 {
+            pt.values.push(permutation[i] as u8)
+        }
         pt
     }
 
@@ -119,7 +125,9 @@ impl PermutationTable {
         let mut permutation: Vec<u64> = (0..=255).collect();
         sm.shuffle_vec(&mut permutation);
         let mut pt = PermutationTable { values: Vec::new() };
-        for i in 0..256 { pt.values.push(permutation[i] as u8) };
+        for i in 0..256 {
+            pt.values.push(permutation[i] as u8)
+        }
         pt
     }
 
