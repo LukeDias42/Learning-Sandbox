@@ -1,6 +1,9 @@
 package main
 
-import "math"
+import (
+	"fmt"
+	"math"
+)
 
 type vertex struct {
 	node
@@ -11,10 +14,31 @@ type node struct {
 	city string
 }
 
-func nextClosestNode(distances map[node]float64, visited map[node]bool) node {
+func dijkstra(graph map[node][]vertex, src node, dest node) []node {
+	unvisited := make(map[node]bool)
+	distances := make(map[node]float64)
+	predecessors := make(map[node]node)
+	fmt.Println(predecessors)
+
+	for k := range graph {
+		distances[k] = math.MaxFloat64
+		unvisited[k] = true
+	}
+	distances[src] = 0
+
+	for len(unvisited) > 0 {
+	}
+
+	return []node{}
+}
+
+func nextClosestNode(distances map[node]float64, unvisited map[node]bool) node {
 	var closestNode node
 	min_dist := math.MaxFloat64
-	for v := range visited {
+	for v := range unvisited {
+		if !unvisited[v] {
+			continue
+		}
 		if min_dist > distances[v] {
 			closestNode = v
 			min_dist = distances[v]
