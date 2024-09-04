@@ -15,7 +15,7 @@ func TestGetPath(t *testing.T) {
 		f: g,
 	}
 	path := getPath(a, predecessors)
-	expected := []node{a, f, g, z}
+	expected := []node{z, g, f, a}
 
 	if len(path) != len(expected) {
 		t.Fatalf("Different amount of items in Path (%d) %v and the expected (%d) %v", len(path), path, len(expected), expected)
@@ -47,7 +47,7 @@ func TestGetPathLonger(t *testing.T) {
 		g: h,
 	}
 	path := getPath(a, predecessors)
-	expected := []node{a, b, c, d, e, f, g, h}
+	expected := []node{h, g, f, e, d, c, b, a}
 
 	if len(path) != len(expected) {
 		t.Fatalf("Different amount of items in Path (%d) %v and the expected (%d) %v", len(path), path, len(expected), expected)
@@ -84,5 +84,60 @@ func TestNextClosestNode(t *testing.T) {
 
 	if closestNode != expected {
 		t.Fatalf("Next Closest Node %v was not equal to expected %v", closestNode, expected)
+	}
+}
+
+func TestDijkstra(t *testing.T) {
+	minasTirith := node{city: "Minas Tirith"}
+	isengard := node{city: "Isengard"}
+	gondor := node{city: "Gondor"}
+	mirkwood := node{city: "Mirkwood"}
+	bree := node{city: "Bree"}
+	lothlorien := node{city: "Lothlorien"}
+	mistyMountains := node{city: "Misty Mountains"}
+
+	graph := map[node]map[node]float64{
+		minasTirith: {
+			isengard: 4,
+			gondor:   1,
+		},
+		isengard: {
+			minasTirith: 4,
+			bree:        4,
+			mirkwood:    8,
+		},
+		gondor: {
+			minasTirith:    1,
+			bree:           2,
+			mistyMountains: 8,
+		},
+		bree: {
+			gondor:   2,
+			isengard: 2,
+			mirkwood: 4,
+		},
+		mirkwood: {
+			bree:       4,
+			isengard:   8,
+			lothlorien: 2,
+		},
+		mistyMountains: {
+			gondor:     6,
+			lothlorien: 8,
+		},
+		lothlorien: {
+			mistyMountains: 8,
+			mirkwood:       2,
+		},
+	}
+	path := dijkstra(graph, minasTirith, lothlorien)
+	expected := []node{minasTirith, gondor, bree, mirkwood, lothlorien}
+	if len(path) != len(expected) {
+		t.Fatalf("Different amount of items in Path (%d) %v and the expected (%d) %v", len(path), path, len(expected), expected)
+	}
+	for i := range len(path) {
+		if path[i] != expected[i] {
+			t.Fatalf("Path %v was not equal to expected %v", path, expected)
+		}
 	}
 }
