@@ -58,3 +58,31 @@ func TestGetPathLonger(t *testing.T) {
 		}
 	}
 }
+
+func TestNextClosestNode(t *testing.T) {
+	minasTirith := node{city: "Minas Tirith"}
+	isengard := node{city: "Isengard"}
+	gondor := node{city: "Gondor"}
+	mirkwood := node{city: "Mirkwood"}
+
+	distances := map[node]float64{
+		minasTirith: 4,
+		isengard:    2,
+		gondor:      3,
+		mirkwood:    1,
+	}
+
+	unvisited := map[node]bool{
+		minasTirith: true,
+		isengard:    false,
+		gondor:      true,
+		mirkwood:    false,
+	}
+
+	closestNode := nextClosestNode(distances, unvisited)
+	expected := gondor
+
+	if closestNode != expected {
+		t.Fatalf("Next Closest Node %v was not equal to expected %v", closestNode, expected)
+	}
+}
