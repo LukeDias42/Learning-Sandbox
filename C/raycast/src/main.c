@@ -48,9 +48,6 @@ SDL_Renderer *renderer = NULL;
 int isGameRunning = FALSE;
 int ticksLastFrame;
 
-Uint32 *colorBuffer = NULL;
-SDL_Texture *colorBufferTexture;
-
 int initializeWindow() {
   if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
     fprintf(stderr, "Error initializing SDL.\n");
@@ -74,8 +71,6 @@ int initializeWindow() {
 }
 
 void destroyWindow() {
-  free(colorBuffer);
-  SDL_DestroyTexture(colorBufferTexture);
   SDL_DestroyRenderer(renderer);
   SDL_DestroyWindow(window);
   SDL_Quit();
@@ -91,14 +86,6 @@ void setup() {
   player.rotationAngle = PI;
   player.walkSpeed = 100;
   player.turnSpeed = 45 * (PI / 180);
-
-  // allocate the total amount of bytes in memory to hold our colorbuffer
-  colorBuffer = (Uint32 *)malloc(sizeof(Uint32) * WINDOW_WIDTH * WINDOW_HEIGHT);
-
-  // create an SDL_Texture to display the colorbuffer
-  colorBufferTexture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888,
-                                         SDL_TEXTUREACCESS_STREAMING,
-                                         WINDOW_WIDTH, WINDOW_HEIGHT);
 }
 
 int mapHasWallAt(float x, float y) {
@@ -383,25 +370,7 @@ void generate3DProjection() {
     int wallBottomPixel = (WINDOW_HEIGHT / 2) + (wallStripHeight / 2);
     wallBottomPixel =
         wallBottomPixel > WINDOW_HEIGHT ? WINDOW_HEIGHT : wallBottomPixel;
-
-    // render the wall from wallTopPixel to wallBottomPixel
-    for (int y = wallTopPixel; y < wallBottomPixel; y++) {
-      colorBuffer[(WINDOW_WIDTH * y) + i] =
-          rays[i].wasHitVertical ? 0xFFFFFFFF : 0xFFCCCCCC;
-    }
   }
-}
-
-void clearColorBuffer(Uint32 color) {
-  for (int x = 0; x < WINDOW_WIDTH; x++)
-    for (int y = 0; y < WINDOW_HEIGHT; y++)
-      colorBuffer[(WINDOW_WIDTH * y) + x] = color;
-}
-
-void renderColorBuffer() {
-  SDL_UpdateTexture(colorBufferTexture, NULL, colorBuffer,
-                    (int)(WINDOW_WIDTH * sizeof(Uint32)));
-  SDL_RenderCopy(renderer, colorBufferTexture, NULL, NULL);
 }
 
 void render() {
@@ -409,9 +378,6 @@ void render() {
   SDL_RenderClear(renderer);
 
   generate3DProjection();
-
-  renderColorBuffer();
-  clearColorBuffer(0xFF000000);
 
   renderMap();
   renderRays();
