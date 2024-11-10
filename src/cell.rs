@@ -33,4 +33,38 @@ impl Cell {
             visited: false,
         }
     }
+    pub fn plot_cell_lines(
+        &self,
+        wall_color: Color,
+        opening_color: Color,
+        buffer: &mut Vec<u32>,
+        window_width: usize,
+        window_height: usize,
+    ) {
+        let mut lines = Vec::with_capacity(4);
+        lines.push(Line::new(
+            Point::new(self.diagonal.p1.x, self.diagonal.p1.y),
+            Point::new(self.diagonal.p1.x, self.diagonal.p2.y),
+        ));
+        lines.push(Line::new(
+            Point::new(self.diagonal.p1.x, self.diagonal.p1.y),
+            Point::new(self.diagonal.p2.x, self.diagonal.p1.y),
+        ));
+        lines.push(Line::new(
+            Point::new(self.diagonal.p2.x, self.diagonal.p1.y),
+            Point::new(self.diagonal.p2.x, self.diagonal.p2.y),
+        ));
+        lines.push(Line::new(
+            Point::new(self.diagonal.p1.x, self.diagonal.p2.y),
+            Point::new(self.diagonal.p2.x, self.diagonal.p2.y),
+        ));
+        for wall in 0..self.sides.len() {
+            let color = if self.sides[wall] {
+                wall_color
+            } else {
+                opening_color
+            };
+            lines[wall].plot_bresenham_line(&color, buffer, window_width, window_height);
+        }
+    }
 }
