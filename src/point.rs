@@ -29,6 +29,7 @@ impl Point {
             buffer[self.x + window_width * self.y] = color;
         }
     }
+}
 
 impl PartialEq for Point {
     fn eq(&self, other: &Self) -> bool {
@@ -36,4 +37,22 @@ impl PartialEq for Point {
     }
 }
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn generates_line_correctly() {
+        let p1 = Point { x: 0, y: 0 };
+        let p2 = Point { x: 500, y: 300 };
+        let line = p1.to(p2);
+
+        assert_eq!(
+            line,
+            Line {
+                p1: Point { x: 0, y: 0 },
+                p2: Point { x: 500, y: 300 }
+            }
+        );
+    }
 }
