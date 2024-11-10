@@ -1,3 +1,4 @@
+use crate::color::Color;
 use crate::point::Point;
 
 #[derive(Clone, Copy, Debug)]
@@ -12,3 +13,9 @@ impl PartialEq for Line {
     }
 }
 
+impl Line {
+    pub fn new(p1: Point, p2: Point) -> Line {
+        Line { p1, p2 }
+    }
+
+}
