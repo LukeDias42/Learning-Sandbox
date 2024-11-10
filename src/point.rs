@@ -4,3 +4,8 @@ pub struct Point {
     pub y: usize,
 }
 
+impl Point {
+    pub fn new(x: usize, y: usize) -> Point {
+        Point { x, y }
+    }
+}
