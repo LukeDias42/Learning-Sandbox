@@ -1,3 +1,6 @@
+use crate::color::Color;
+use crate::line::Line;
+
 #[derive(Clone, Copy, Debug)]
 pub struct Point {
     pub x: usize,
@@ -12,6 +15,18 @@ impl Point {
         Line {
             p1: self.clone(),
             p2: other,
+        }
+    }
+    pub fn plot_point(
+        &self,
+        color: Color,
+        buffer: &mut Vec<u32>,
+        window_width: usize,
+        window_height: usize,
+    ) {
+        let color = color.to_rgb888();
+        if self.x < window_width && self.y < window_height {
+            buffer[self.x + window_width * self.y] = color;
         }
     }
 
