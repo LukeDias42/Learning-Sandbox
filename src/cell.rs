@@ -1,5 +1,7 @@
+use crate::color::Color;
 use crate::line::Line;
 use crate::point::Point;
+
 pub struct Cell {
     pub sides: [bool; 4],
     pub diagonal: Line,
@@ -66,5 +68,22 @@ impl Cell {
             };
             lines[wall].plot_bresenham_line(&color, buffer, window_width, window_height);
         }
+    }
+    pub fn move_cell(
+        &self,
+        other: &Cell,
+        undo: bool,
+        buffer: &mut Vec<u32>,
+        window_width: usize,
+        window_height: usize,
+    ) {
+        let mut color = Color::new(255, 0, 0);
+        if undo {
+            color = Color::new(122, 122, 122);
+        }
+        self.diagonal
+            .middle()
+            .to(other.diagonal.middle())
+            .plot_bresenham_line(&color, buffer, window_width, window_height);
     }
 }
