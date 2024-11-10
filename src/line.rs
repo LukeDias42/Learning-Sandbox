@@ -6,3 +6,9 @@ pub struct Line {
     pub p2: Point,
 }
 
+impl PartialEq for Line {
+    fn eq(&self, other: &Self) -> bool {
+        self.p1 == other.p1 && self.p2 == other.p2
+    }
+}
+
