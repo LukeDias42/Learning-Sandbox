@@ -1,3 +1,9 @@
+use minifb::Window;
+use rand::Rng;
+
+use crate::cell::Cell;
+use crate::color::Color;
+use crate::point::Point;
 
 pub struct Maze {
     pub start: Point,
@@ -63,4 +69,9 @@ impl Maze {
         let opening_color = Color::new(0x33, 0x33, 0x33);
         self.cells[y][x].plot_cell_lines(color, opening_color, buffer, window_width, window_height);
     }
+    pub fn break_entrance_and_exit(&mut self) {
+        self.cells[0][0].sides = [true, false, true, true];
+        self.cells[self.rows - 1][self.columns - 1].sides = [true, true, true, false];
+    }
+
 }
