@@ -51,4 +51,16 @@ impl Maze {
         }
         cells
     }
+    pub fn draw_cell(
+        &self,
+        x: usize,
+        y: usize,
+        buffer: &mut Vec<u32>,
+        window_width: usize,
+        window_height: usize,
+    ) {
+        let color = Color::new(255, 255, 255);
+        let opening_color = Color::new(0x33, 0x33, 0x33);
+        self.cells[y][x].plot_cell_lines(color, opening_color, buffer, window_width, window_height);
+    }
 }
