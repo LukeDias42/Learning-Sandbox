@@ -146,4 +146,84 @@ impl Maze {
         }
     }
 
+    pub fn solve(
+        &mut self,
+        buffer: &mut Vec<u32>,
+        window_width: usize,
+        window_height: usize,
+        window: &mut Window,
+    ) -> bool {
+        self.solve_r(0, 0, buffer, window_width, window_height, window)
+    }
+    pub fn solve_r(
+        &mut self,
+        x: usize,
+        y: usize,
+        buffer: &mut Vec<u32>,
+        window_width: usize,
+        window_height: usize,
+        window: &mut Window,
+    ) -> bool {
+        self.cells[y][x].visited = true;
+        if x == self.columns - 1 && y == self.rows - 1 {
+            return true;
+        }
+
+        let mut not_visited: Vec<[isize; 2]> = Vec::with_capacity(4);
+        if x != 0 && !self.cells[y][x].sides[0] {
+            if !self.cells[y][x - 1].visited {
+                not_visited.push([-1, 0]);
+            }
+        }
+        if y != 0 && !self.cells[y][x].sides[1] {
+            if !self.cells[y - 1][x].visited {
+                not_visited.push([0, -1]);
+            }
+        }
+        if x < self.columns - 1 && !self.cells[y][x].sides[2] {
+            if !self.cells[y][x + 1].visited {
+                not_visited.push([1, 0]);
+            }
+        }
+        if y < self.rows - 1 && !self.cells[y][x].sides[3] {
+            if !self.cells[y + 1][x].visited {
+                not_visited.push([0, 1]);
+            }
+        }
+        for cell in not_visited {
+            self.cells[y][x].move_cell(
+                &self.cells[((y as isize) + cell[1]) as usize][((x as isize) + cell[0]) as usize],
+                false,
+                buffer,
+                window_width,
+                window_height,
+            );
+            window
+                .update_with_buffer(&buffer, window_width, window_height)
+                .unwrap();
+            if self.solve_r(
+                ((x as isize) + cell[0]) as usize,
+                ((y as isize) + cell[1]) as usize,
+                buffer,
+                window_width,
+                window_height,
+                window,
+            ) {
+                return true;
+            } else {
+                self.cells[y][x].move_cell(
+                    &self.cells[((y as isize) + cell[1]) as usize]
+                        [((x as isize) + cell[0]) as usize],
+                    true,
+                    buffer,
+                    window_width,
+                    window_height,
+                );
+            }
+            window
+                .update_with_buffer(&buffer, window_width, window_height)
+                .unwrap();
+        }
+        return false;
+    }
 }
