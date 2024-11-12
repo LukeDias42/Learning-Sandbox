@@ -138,4 +138,12 @@ impl Maze {
         }
     }
 
+    pub fn reset_visited_cells(&mut self) {
+        for y in 0..self.rows {
+            for x in 0..self.columns {
+                self.cells[y][x].visited = false;
+            }
+        }
+    }
+
 }
