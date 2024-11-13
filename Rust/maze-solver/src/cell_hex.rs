@@ -126,4 +126,21 @@ impl CellHex {
             lines[wall].plot_bresenham_line(&color, buffer, window_width, window_height);
         }
     }
+    pub fn move_cell(
+        &self,
+        other: &CellHex,
+        undo: bool,
+        buffer: &mut Vec<u32>,
+        window_width: usize,
+        window_height: usize,
+    ) {
+        let mut color = Color::new(0xFF, 0x45, 0x00);
+        if undo {
+            color = Color::new(0x7F, 0x6B, 0x00);
+        }
+        self.horizontal_diagonal
+            .middle()
+            .to(other.horizontal_diagonal.middle())
+            .plot_bresenham_line(&color, buffer, window_width, window_height);
+    }
 }
