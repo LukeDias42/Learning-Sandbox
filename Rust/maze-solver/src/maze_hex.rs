@@ -83,4 +83,23 @@ impl MazeHex {
         let opening_color = Color::new(0x2B, 0x2D, 0x42);
         self.cells[y][x].plot_cell_lines(color, opening_color, buffer, window_width, window_height);
     }
+    fn break_entrance_and_exit(&mut self) {
+        self.cells[self.start_cell.y][self.start_cell.x].sides =
+            self.walls_based_on_outer_direction(self.start_cell.x, self.start_cell.y);
+        self.cells[self.end_cell.y][self.end_cell.x].sides =
+            self.walls_based_on_outer_direction(self.end_cell.x, self.end_cell.y);
+    }
+
+    fn walls_based_on_outer_direction(&self, x: usize, y: usize) -> [bool; 6] {
+        if x == 0 {
+            return [false, true, true, true, true, true];
+        }
+        if y == 0 {
+            return [true, true, false, true, true, true];
+        }
+        if x == self.columns - 1 {
+            return [true, true, true, false, true, true];
+        }
+        return [true, true, true, true, true, false];
+    }
 }
