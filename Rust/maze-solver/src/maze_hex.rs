@@ -17,6 +17,25 @@ pub struct MazeHex {
 
 const SQRT_3: f64 = 1.732050807568877293527446341505872367_f64;
 impl MazeHex {
+    pub fn animate(
+        start: Point,
+        rows: usize,
+        columns: usize,
+        cell_side_len: usize,
+        background_color: Color,
+        window_width: usize,
+        window_height: usize,
+        mut buffer: &mut Vec<u32>,
+        mut window: &mut Window,
+    ) {
+        buffer.fill(background_color.to_rgb888());
+        let mut maze = MazeHex::new(start, rows, columns, cell_side_len);
+        maze.break_walls(window_width, window_height);
+        maze.reset_visited_cells();
+        maze.draw_maze(&mut buffer, window_width, window_height);
+        maze.solve(&mut buffer, window_width, window_height, &mut window);
+    }
+
     pub fn new(start: Point, rows: usize, columns: usize, cell_side_len: usize) -> MazeHex {
         let cells = MazeHex::create_cells(start, rows, columns, cell_side_len);
         let [start_cell, end_cell] = MazeHex::choose_start_and_end_cell(columns, rows);
@@ -32,6 +51,7 @@ impl MazeHex {
         maze.break_entrance_and_exit();
         maze
     }
+
     fn choose_start_and_end_cell(width: usize, height: usize) -> [Point; 2] {
         let start_cell = MazeHex::pick_random_outer_cell(width, height);
         let mut end_cell = MazeHex::pick_random_outer_cell(width, height);
@@ -40,6 +60,7 @@ impl MazeHex {
         }
         return [start_cell, end_cell];
     }
+
     fn pick_random_outer_cell(width: usize, height: usize) -> Point {
         let mut rng = rand::thread_rng();
         let random_direction = rng.gen_range(0..=3);
@@ -86,6 +107,7 @@ impl MazeHex {
         }
         cells
     }
+
     pub fn draw_cell(
         &self,
         x: usize,
@@ -98,6 +120,7 @@ impl MazeHex {
         let opening_color = Color::new(0x2B, 0x2D, 0x42);
         self.cells[y][x].plot_cell_lines(color, opening_color, buffer, window_width, window_height);
     }
+
     pub fn draw_maze(&self, mut buffer: &mut Vec<u32>, window_width: usize, window_height: usize) {
         for y in 0..self.rows {
             for x in 0..self.columns {
@@ -105,6 +128,7 @@ impl MazeHex {
             }
         }
     }
+
     fn break_entrance_and_exit(&mut self) {
         self.cells[self.start_cell.y][self.start_cell.x].sides =
             self.walls_based_on_outer_direction(self.start_cell.x, self.start_cell.y);
