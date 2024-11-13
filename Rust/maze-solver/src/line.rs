@@ -67,6 +67,7 @@ impl Line {
             }
         }
     }
+
     pub fn middle(&self) -> Point {
         let x = (self.p1.x + self.p2.x) / 2;
         let y = (self.p1.y + self.p2.y) / 2;
