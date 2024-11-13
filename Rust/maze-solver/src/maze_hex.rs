@@ -17,6 +17,21 @@ pub struct MazeHex {
 
 const SQRT_3: f64 = 1.732050807568877293527446341505872367_f64;
 impl MazeHex {
+    pub fn new(start: Point, rows: usize, columns: usize, cell_side_len: usize) -> MazeHex {
+        let cells = MazeHex::create_cells(start, rows, columns, cell_side_len);
+        let [start_cell, end_cell] = MazeHex::choose_start_and_end_cell(columns, rows);
+        let mut maze = MazeHex {
+            start,
+            rows,
+            columns,
+            cell_side_len,
+            cells,
+            start_cell,
+            end_cell,
+        };
+        maze.break_entrance_and_exit();
+        maze
+    }
     fn choose_start_and_end_cell(width: usize, height: usize) -> [Point; 2] {
         let start_cell = MazeHex::pick_random_outer_cell(width, height);
         let mut end_cell = MazeHex::pick_random_outer_cell(width, height);
@@ -102,4 +117,5 @@ impl MazeHex {
         }
         return [true, true, true, true, true, false];
     }
+
 }
