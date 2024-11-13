@@ -98,6 +98,13 @@ impl MazeHex {
         let opening_color = Color::new(0x2B, 0x2D, 0x42);
         self.cells[y][x].plot_cell_lines(color, opening_color, buffer, window_width, window_height);
     }
+    pub fn draw_maze(&self, mut buffer: &mut Vec<u32>, window_width: usize, window_height: usize) {
+        for y in 0..self.rows {
+            for x in 0..self.columns {
+                self.draw_cell(x, y, &mut buffer, window_width, window_height);
+            }
+        }
+    }
     fn break_entrance_and_exit(&mut self) {
         self.cells[self.start_cell.y][self.start_cell.x].sides =
             self.walls_based_on_outer_direction(self.start_cell.x, self.start_cell.y);
