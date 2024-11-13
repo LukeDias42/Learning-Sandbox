@@ -52,6 +52,7 @@ impl CellHex {
             visited: false,
         }
     }
+
     pub fn plot_cell_lines(
         &self,
         wall_color: Color,
@@ -118,14 +119,22 @@ impl CellHex {
             ),
         ));
         for wall in 0..self.sides.len() {
-            let color = if self.sides[wall] {
-                wall_color
-            } else {
-                opening_color
-            };
-            lines[wall].plot_bresenham_line(&color, buffer, window_width, window_height);
+            if !self.sides[wall] {
+                lines[wall].plot_bresenham_line(
+                    &opening_color,
+                    buffer,
+                    window_width,
+                    window_height,
+                );
+            }
+        }
+        for wall in 0..self.sides.len() {
+            if self.sides[wall] {
+                lines[wall].plot_bresenham_line(&wall_color, buffer, window_width, window_height);
+            }
         }
     }
+
     pub fn move_cell(
         &self,
         other: &CellHex,
