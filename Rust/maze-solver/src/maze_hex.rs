@@ -40,4 +40,35 @@ impl MazeHex {
         Point::new(rng.gen_range(0..width), height - 1)
     }
 
+    fn create_cells(
+        start: Point,
+        rows: usize,
+        columns: usize,
+        cell_side_len: usize,
+    ) -> Vec<Vec<CellHex>> {
+        let height = SQRT_3 * cell_side_len as f64;
+        let half_height = height / 2_f64;
+        let mut cells: Vec<Vec<CellHex>> = Vec::with_capacity(rows);
+        for y in 0..rows {
+            let mut row: Vec<CellHex> = Vec::with_capacity(columns);
+
+            let mut x_stagger = 0;
+            for x in 0..columns {
+                let y_stagger = (x % 2) as f64 * half_height;
+                let diagonal = Point::new(
+                    x * cell_side_len * 2 - x_stagger + start.x,
+                    y * (height as usize) + y_stagger as usize + start.y,
+                )
+                .to(Point::new(
+                    (x + 1) * cell_side_len * 2 - x_stagger + start.x,
+                    y * (height as usize) + y_stagger as usize + start.y,
+                ));
+                let cell = CellHex::new(true, true, true, true, true, true, diagonal);
+                row.push(cell);
+                x_stagger += cell_side_len / 2;
+            }
+            cells.push(row);
+        }
+        cells
+    }
 }
