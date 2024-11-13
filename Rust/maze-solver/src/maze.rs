@@ -39,6 +39,7 @@ impl Maze {
         maze.break_entrance_and_exit();
         maze
     }
+
     fn choose_start_and_end_cell(width: usize, height: usize) -> [Point; 2] {
         let start_cell = Maze::pick_random_outer_cell(width, height);
         let mut end_cell = Maze::pick_random_outer_cell(width, height);
@@ -47,6 +48,7 @@ impl Maze {
         }
         return [start_cell, end_cell];
     }
+
     fn pick_random_outer_cell(width: usize, height: usize) -> Point {
         let mut rng = rand::thread_rng();
         let random_direction = rng.gen_range(0..=3);
@@ -75,8 +77,8 @@ impl Maze {
             for x in 0..columns {
                 let diagonal =
                     Point::new(x * cell_width + start.x, y * cell_height + start.y).to(Point::new(
-                        start.x + (x + 1) * cell_width,
-                        start.y + (y + 1) * cell_height,
+                        (x + 1) * cell_width + start.x,
+                        (y + 1) * cell_height + start.y,
                     ));
                 let cell = Cell::new(true, true, true, true, diagonal);
                 row.push(cell);
@@ -85,6 +87,7 @@ impl Maze {
         }
         cells
     }
+
     pub fn draw_cell(
         &self,
         x: usize,
@@ -97,6 +100,15 @@ impl Maze {
         let opening_color = Color::new(0x33, 0x33, 0x33);
         self.cells[y][x].plot_cell_lines(color, opening_color, buffer, window_width, window_height);
     }
+
+    pub fn draw_maze(&self, mut buffer: &mut Vec<u32>, window_width: usize, window_height: usize) {
+        for y in 0..self.rows {
+            for x in 0..self.columns {
+                self.draw_cell(x, y, &mut buffer, window_width, window_height);
+            }
+        }
+    }
+
     fn break_entrance_and_exit(&mut self) {
         self.cells[self.start_cell.y][self.start_cell.x].sides =
             self.walls_based_on_outer_direction(self.start_cell.x, self.start_cell.y);
