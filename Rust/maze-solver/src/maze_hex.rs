@@ -71,4 +71,16 @@ impl MazeHex {
         }
         cells
     }
+    pub fn draw_cell(
+        &self,
+        x: usize,
+        y: usize,
+        buffer: &mut Vec<u32>,
+        window_width: usize,
+        window_height: usize,
+    ) {
+        let color = Color::new(0x8A, 0x9B, 0xA8);
+        let opening_color = Color::new(0x2B, 0x2D, 0x42);
+        self.cells[y][x].plot_cell_lines(color, opening_color, buffer, window_width, window_height);
+    }
 }
