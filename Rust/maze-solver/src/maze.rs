@@ -17,6 +17,26 @@ pub struct Maze {
 }
 
 impl Maze {
+    pub fn animate(
+        start: Point,
+        rows: usize,
+        columns: usize,
+        cell_width: usize,
+        cell_height: usize,
+        background_color: Color,
+        window_width: usize,
+        window_height: usize,
+        mut buffer: &mut Vec<u32>,
+        mut window: &mut Window,
+    ) {
+        buffer.fill(background_color.to_rgb888());
+        let mut maze = Maze::new(start, rows, columns, cell_width, cell_height);
+        maze.break_walls(window_width, window_height);
+        maze.reset_visited_cells();
+        maze.draw_maze(&mut buffer, window_width, window_height);
+        maze.solve(&mut buffer, window_width, window_height, &mut window);
+    }
+
     pub fn new(
         start: Point,
         rows: usize,
