@@ -1,7 +1,7 @@
 use crate::color::Color;
 use crate::line::Line;
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Point {
     pub x: usize,
     pub y: usize,
@@ -28,12 +28,6 @@ impl Point {
         if self.x < window_width && self.y < window_height {
             buffer[self.x + window_width * self.y] = color;
         }
-    }
-}
-
-impl PartialEq for Point {
-    fn eq(&self, other: &Self) -> bool {
-        self.x == other.x && self.y == other.y
     }
 }
 
