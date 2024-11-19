@@ -1,5 +1,5 @@
 [package]
-name = "pomobuild"
+name = "focusbuild"
 version = "0.1.0"
 edition = "2021"
 
@@ -9,3 +9,5 @@ edition = "2021"
 color-eyre = "0.6.3"
 crossterm = "0.28.1"
 ratatui = "0.29.0"
+chrono = "0.4.38"
+rusqlite = { version = "0.32.1", features = ["chrono"] }
