@@ -21,6 +21,8 @@ pub struct App {
     screen_stack: Vec<Screen>,
     pub main_menu: MainMenu,
     pub timer: Timer,
+    pub statistics: Statistics,
+    pub town: Town,
 }
 
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
@@ -53,6 +55,8 @@ impl App {
             screen_stack,
             timer: Timer::new()?,
             main_menu: MainMenu::default(),
+            statistics: Statistics::new()?,
+            town: Town::default(),
         })
     }
     pub fn run(mut self, mut terminal: DefaultTerminal) -> Result<()> {
@@ -89,6 +93,8 @@ impl App {
         let result = match current_screen {
             Screen::MainMenu => self.main_menu.handle_key_press(key)?,
             Screen::Timer => self.timer.handle_key_press(key)?,
+            Screen::Statistics => self.statistics.handle_key_press(key)?,
+            Screen::Town => self.town.handle_key_press(key)?,
             _ => key_press_result,
         };
         if result.0 != current_screen {
