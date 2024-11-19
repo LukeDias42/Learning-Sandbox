@@ -20,6 +20,9 @@ pub struct App {
     mode: Mode,
     screen_stack: Vec<Screen>,
     pub main_menu: MainMenu,
+    pub timer: Timer,
+}
+
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
 pub enum Screen {
     #[default]
@@ -38,6 +41,9 @@ pub enum Mode {
     Quit,
 }
 
+pub struct RemoveFromStack(pub bool);
+pub struct KeyPressResult(pub Screen, pub Mode, pub RemoveFromStack);
+
 impl App {
     pub fn new() -> Result<App> {
         let mut screen_stack: Vec<Screen> = Vec::new();
@@ -45,6 +51,7 @@ impl App {
         Ok(App {
             mode: Mode::default(),
             screen_stack,
+            timer: Timer::new()?,
             main_menu: MainMenu::default(),
         })
     }
@@ -81,11 +88,25 @@ impl App {
         let key_press_result = KeyPressResult(current_screen, self.mode, RemoveFromStack(false));
         let result = match current_screen {
             Screen::MainMenu => self.main_menu.handle_key_press(key)?,
+            Screen::Timer => self.timer.handle_key_press(key)?,
             _ => key_press_result,
         };
+        if result.0 != current_screen {
+            if result.2 .0 {
+                self.screen_stack.pop();
+            }
+            let new_current_screen = self.screen_stack.last().unwrap_or(&Screen::None).to_owned();
+            if new_current_screen != result.0 {
+                if result.0 == Screen::Timer {
+                    self.timer = Timer::new()?
+                }
+                self.screen_stack.push(result.0);
+            }
+        }
         self.mode = result.1;
         Ok(())
     }
+
     fn draw(&self, frame: &mut Frame) {
         frame.render_widget(self, frame.area());
     }
