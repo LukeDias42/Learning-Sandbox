@@ -3,6 +3,7 @@ use crossterm::event::{KeyCode, KeyEvent};
 use ratatui::{
     buffer::Buffer,
     layout::Rect,
+    style::Styled,
     text::Text,
     widgets::{Block, Borders, Widget},
 };
@@ -14,21 +15,21 @@ use super::app::{KeyPressResult, Mode, RemoveFromStack, Screen};
 const LOGO_WIDTH: u16 = 73;
 const LOGO_HEIGHT: u16 = 6;
 const POMO_BUILD_LOGO: &str =
-    "██████╗  ██████╗ ███╗   ███╗ ██████╗ ██████╗ ██╗   ██╗██╗██╗     ██████╗ 
-██╔══██╗██╔═══██╗████╗ ████║██╔═══██╗██╔══██╗██║   ██║██║██║     ██╔══██╗
-██████╔╝██║   ██║██╔████╔██║██║   ██║██████╔╝██║   ██║██║██║     ██║  ██║
-██╔═══╝ ██║   ██║██║╚██╔╝██║██║   ██║██╔══██╗██║   ██║██║██║     ██║  ██║
-██║     ╚██████╔╝██║ ╚═╝ ██║╚██████╔╝██████╔╝╚██████╔╝██║███████╗██████╔╝
-╚═╝      ╚═════╝ ╚═╝     ╚═╝ ╚═════╝ ╚═════╝  ╚═════╝ ╚═╝╚══════╝╚═════╝ 
-";
+    "███████╗ ██████╗  ██████╗██╗   ██╗███████╗██████╗ ██╗   ██╗██╗██╗     ██████╗ 
+██╔════╝██╔═══██╗██╔════╝██║   ██║██╔════╝██╔══██╗██║   ██║██║██║     ██╔══██╗
+█████╗  ██║   ██║██║     ██║   ██║███████╗██████╔╝██║   ██║██║██║     ██║  ██║
+██╔══╝  ██║   ██║██║     ██║   ██║╚════██║██╔══██╗██║   ██║██║██║     ██║  ██║
+██║     ╚██████╔╝╚██████╗╚██████╔╝███████║██████╔╝╚██████╔╝██║███████╗██████╔╝
+╚═╝      ╚═════╝  ╚═════╝ ╚═════╝ ╚══════╝╚═════╝  ╚═════╝ ╚═╝╚══════╝╚═════╝ 
+                                                                              ";
 
 const SMALL_LOGO_WIDTH: u16 = 38;
 const SMALL_LOGO_HEIGHT: u16 = 4;
-const SMALL_POMO_BUILD_LOGO: &str = " _ __                __          _    
-' )  )              /  )        //   /
- /--'__ ______  __ /--<  . . o // __/ 
-/   (_)/ / / <_(_)/___/_(_/_<_</_(_/_ 
-";
+const SMALL_POMO_BUILD_LOGO: &str = "   _____              __          _    
+    /  '             /  )        //   /
+ ,-/-,__ _. . . _   /--<  . . o // __/ 
+(_/  (_)(__(_/_/_)_/___/_(_/_<_</_(_/_ 
+                                       ";
 
 const KEYBIND_STRINGS: [(&str, &str); 5] = [
     (
@@ -168,6 +169,7 @@ impl Widget for MainMenu {
         let keybind_block_area = Rect::new((area.width - 45) / 2, area.height / 4, 45, 27);
         Block::new()
             .borders(Borders::all())
+            .style(THEME.key_binding.block)
             .render(keybind_block_area, buf);
         let keybind_area = Rect::new(keybind_block_area.x + 1, keybind_block_area.y + 1, 35, 5);
         self.draw_keybinds(keybind_area, buf);
