@@ -4,7 +4,7 @@ use ratatui::{
     buffer::Buffer,
     layout::Rect,
     text::Text,
-    widgets::{Block, Borders, Padding, Paragraph, Widget, Wrap},
+    widgets::{Block, Borders, Widget},
 };
 
 use crate::application::theme::THEME;
@@ -27,7 +27,61 @@ const SMALL_LOGO_HEIGHT: u16 = 4;
 const SMALL_POMO_BUILD_LOGO: &str = " _ __                __          _    
 ' )  )              /  )        //   /
  /--'__ ______  __ /--<  . . o // __/ 
-/   (_)/ / / <_(_)/___/_(_/_<_</_(_/_ ";
+/   (_)/ / / <_(_)/___/_(_/_<_</_(_/_ 
+";
+
+const KEYBIND_STRINGS: [(&str, &str); 5] = [
+    (
+        " ▗▄▄▖
+▐▌   
+ ▝▀▚▖
+▗▄▄▞▘",
+        " ▗▄▄▖▗▄▄▄▖▗▄▖ ▗▄▄▖▗▄▄▄▖
+▐▌     █ ▐▌ ▐▌▐▌ ▐▌ █  
+ ▝▀▚▖  █ ▐▛▀▜▌▐▛▀▚▖ █  
+▗▄▄▞▘  █ ▐▌ ▐▌▐▌ ▐▌ █  ",
+    ),
+    (
+        "▗▖ ▗▖
+▐▌ ▐▌
+▐▛▀▜▌
+▐▌ ▐▌",
+        "▗▖ ▗▖▗▄▄▄▖ ▗▄▄▖▗▄▄▄▖▗▄▖ ▗▄▄▖▗▖  ▗▖
+▐▌ ▐▌  █  ▐▌     █ ▐▌ ▐▌▐▌ ▐▌▝▚▞▘ 
+▐▛▀▜▌  █   ▝▀▚▖  █ ▐▌ ▐▌▐▛▀▚▖ ▐▌  
+▐▌ ▐▌▗▄█▄▖▗▄▄▞▘  █ ▝▚▄▞▘▐▌ ▐▌ ▐▌  ",
+    ),
+    (
+        "▗▄▄▄ 
+▐▌  █
+▐▌  █
+▐▙▄▄▀",
+        "▗▄▄▄  ▗▄▖▗▄▄▄▖▗▄▖ 
+▐▌  █▐▌ ▐▌ █ ▐▌ ▐▌
+▐▌  █▐▛▀▜▌ █ ▐▛▀▜▌
+▐▙▄▄▀▐▌ ▐▌ █ ▐▌ ▐▌",
+    ),
+    (
+        "▗▄▄▄▖
+  █  
+  █  
+  █  ",
+        "▗▄▄▄▖▗▄▖ ▗▖ ▗▖▗▖  ▗▖
+  █ ▐▌ ▐▌▐▌ ▐▌▐▛▚▖▐▌
+  █ ▐▌ ▐▌▐▌ ▐▌▐▌ ▝▜▌
+  █ ▝▚▄▞▘▐▙█▟▌▐▌  ▐▌",
+    ),
+    (
+        "▗▄▄▄▖ 
+▐▌ ▐▌ 
+▐▌ ▐▌ 
+▐▙▄▟▙▖",
+        "▗▄▄▄▖ ▗▖ ▗▖▗▄▄▄▖▗▄▄▄▖
+▐▌ ▐▌ ▐▌ ▐▌  █    █  
+▐▌ ▐▌ ▐▌ ▐▌  █    █  
+▐▙▄▟▙▖▝▚▄▞▘▗▄█▄▖  █  ",
+    ),
+];
 
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
 pub struct MainMenu {}
@@ -41,20 +95,50 @@ impl MainMenu {
 impl MainMenu {
     pub fn handle_key_press(&mut self, key: KeyEvent) -> Result<KeyPressResult> {
         Ok(match key.code {
-            KeyCode::Char('q') | KeyCode::Esc => {
-                KeyPressResult(Screen::None, Mode::Quit, RemoveFromStack(true))
-            }
-            KeyCode::Char('b') => {
+            KeyCode::Char('s') | KeyCode::Char('S') => {
                 KeyPressResult(Screen::Timer, Mode::Running, RemoveFromStack(false))
             }
-            KeyCode::Char('s') => {
-                KeyPressResult(Screen::Statistics, Mode::Running, RemoveFromStack(false))
+            KeyCode::Char('h') | KeyCode::Char('H') => {
+                KeyPressResult(Screen::History, Mode::Running, RemoveFromStack(false))
             }
-            KeyCode::Char('t') => {
+            KeyCode::Char('d') | KeyCode::Char('D') => {
+                KeyPressResult(Screen::MainMenu, Mode::Running, RemoveFromStack(false))
+            }
+            KeyCode::Char('t') | KeyCode::Char('T') => {
                 KeyPressResult(Screen::Town, Mode::Running, RemoveFromStack(false))
+            }
+            KeyCode::Char('q') | KeyCode::Char('Q') | KeyCode::Esc => {
+                KeyPressResult(Screen::None, Mode::Quit, RemoveFromStack(true))
             }
             _ => KeyPressResult(Screen::MainMenu, Mode::Running, RemoveFromStack(false)),
         })
+    }
+    pub fn draw_keybinds(&self, area: Rect, buf: &mut Buffer) {
+        for (i, (key, desc)) in KEYBIND_STRINGS.iter().enumerate() {
+            let mut key_area = area.clone();
+            key_area.y += 5 * i as u16;
+
+            Text::raw("")
+                .style(THEME.key_binding.key)
+                .render(key_area, buf);
+            key_area.x += 1;
+            Text::raw(key.to_string())
+                .style(THEME.key_binding.key)
+                .render(key_area, buf);
+            key_area.x += 1;
+            Text::raw("")
+                .style(THEME.key_binding.key)
+                .render(key_area, buf);
+            key_area.x += 5;
+
+            Text::raw("")
+                .style(THEME.key_binding.description)
+                .render(key_area, buf);
+            key_area.x += 2;
+            Text::raw(desc.to_string())
+                .style(THEME.key_binding.description)
+                .render(key_area, buf);
+        }
     }
 }
 
@@ -81,26 +165,11 @@ impl Widget for MainMenu {
                 .style(THEME.logo)
                 .render(title_area, buf);
         }
-        let area = Rect::new(
-            3 * area.width / 8,
-            area.height / 4,
-            area.width / 4,
-            area.height / 2,
-        );
-        let options = Paragraph::new(
-            "[B]egin
-[T]own
-[S]tatistics
-[Q]uit",
-        )
-        .block(
-            Block::new()
-                .borders(Borders::ALL)
-                .padding(Padding::symmetric(area.width / 12, area.height / 6)),
-        )
-        .wrap(Wrap { trim: true })
-        .scroll((0, 0))
-        .style(THEME.key_binding.key);
-        options.render(area, buf);
+        let keybind_block_area = Rect::new((area.width - 45) / 2, area.height / 4, 45, 27);
+        Block::new()
+            .borders(Borders::all())
+            .render(keybind_block_area, buf);
+        let keybind_area = Rect::new(keybind_block_area.x + 1, keybind_block_area.y + 1, 35, 5);
+        self.draw_keybinds(keybind_area, buf);
     }
 }
