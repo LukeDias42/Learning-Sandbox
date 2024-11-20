@@ -1,12 +1,13 @@
-use std::time::Duration;
+use std::{io::stdout, time::Duration};
 
 use color_eyre::{eyre::Context, Result};
 use crossterm::event::{self, Event, KeyEvent, KeyEventKind};
 use ratatui::{
     buffer::Buffer,
     layout::Rect,
+    prelude::CrosstermBackend,
     widgets::{Block, Widget},
-    DefaultTerminal, Frame,
+    Frame, Terminal,
 };
 
 use crate::application::{
@@ -56,10 +57,17 @@ impl App {
             town: Town::default(),
         })
     }
-    pub fn run(mut self, mut terminal: DefaultTerminal) -> Result<()> {
+    pub fn run(mut self) -> Result<()> {
+        let backend = CrosstermBackend::new(stdout());
+        let terminal = Terminal::new(backend)?;
+        let mut ratatui_terminal = ratatui::init();
         while self.is_running() {
-            terminal
-                .draw(|frame| self.draw(frame))
+            let terminal_size = terminal.size()?;
+            let width = terminal_size.width;
+            let height = terminal_size.height;
+            let area = Rect::new(0, 0, width, height);
+            ratatui_terminal
+                .draw(|frame| self.draw(frame, area))
                 .wrap_err("terminal.draw")?;
             self.handle_events()?;
         }
@@ -67,7 +75,7 @@ impl App {
     }
 
     fn handle_events(&mut self) -> Result<()> {
-        let timeout = Duration::from_secs_f64(1.0 / 50.0);
+        let timeout = Duration::from_secs_f64(1.0 / 60.0);
         if !event::poll(timeout)? {
             return Ok(());
         }
@@ -113,8 +121,8 @@ impl App {
         Ok(())
     }
 
-    fn draw(&self, frame: &mut Frame) {
-        frame.render_widget(self, frame.area());
+    fn draw(&self, frame: &mut Frame, area: Rect) {
+        frame.render_widget(self, area);
     }
 
     fn is_running(&self) -> bool {
