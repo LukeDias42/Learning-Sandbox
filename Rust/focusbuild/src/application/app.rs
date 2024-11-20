@@ -1,10 +1,7 @@
 use std::time::Duration;
 
-use color_eyre::{
-    eyre::{Context, OptionExt},
-    Result,
-};
-use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyEventKind};
+use color_eyre::{eyre::Context, Result};
+use crossterm::event::{self, Event, KeyEvent, KeyEventKind};
 use ratatui::{
     buffer::Buffer,
     layout::Rect,
@@ -13,7 +10,7 @@ use ratatui::{
 };
 
 use crate::application::{
-    main_menu::MainMenu, statistics::Statistics, theme::THEME, timer::Timer, town::Town,
+    history::History, main_menu::MainMenu, theme::THEME, timer::Timer, town::Town,
 };
 
 pub struct App {
@@ -21,7 +18,7 @@ pub struct App {
     screen_stack: Vec<Screen>,
     pub main_menu: MainMenu,
     pub timer: Timer,
-    pub statistics: Statistics,
+    pub history: History,
     pub town: Town,
 }
 
@@ -31,7 +28,7 @@ pub enum Screen {
     MainMenu,
     Timer,
     Town,
-    Statistics,
+    History,
     None,
 }
 
@@ -55,7 +52,7 @@ impl App {
             screen_stack,
             timer: Timer::new()?,
             main_menu: MainMenu::default(),
-            statistics: Statistics::new()?,
+            history: History::new()?,
             town: Town::default(),
         })
     }
@@ -93,7 +90,7 @@ impl App {
         let result = match current_screen {
             Screen::MainMenu => self.main_menu.handle_key_press(key)?,
             Screen::Timer => self.timer.handle_key_press(key)?,
-            Screen::Statistics => self.statistics.handle_key_press(key)?,
+            Screen::History => self.history.handle_key_press(key)?,
             Screen::Town => self.town.handle_key_press(key)?,
             _ => key_press_result,
         };
@@ -105,6 +102,9 @@ impl App {
             if new_current_screen != result.0 {
                 if result.0 == Screen::Timer {
                     self.timer = Timer::new()?
+                }
+                if result.0 == Screen::History {
+                    self.history = History::new()?
                 }
                 self.screen_stack.push(result.0);
             }
@@ -130,7 +130,7 @@ impl Widget for &App {
             match screen {
                 Screen::MainMenu => self.main_menu.render(area, buf),
                 Screen::Timer => self.timer.render(area, buf),
-                Screen::Statistics => self.statistics.render(area, buf),
+                Screen::History => self.history.render(area, buf),
                 Screen::Town => self.town.render(area, buf),
                 _ => {}
             }
