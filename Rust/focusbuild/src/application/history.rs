@@ -4,7 +4,6 @@ use crossterm::event::{KeyCode, KeyEvent};
 use ratatui::{
     buffer::Buffer,
     layout::Rect,
-    style::Color,
     text::{Line, Span},
     widgets::{Block, Borders, Paragraph, Widget},
 };
