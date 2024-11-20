@@ -11,6 +11,7 @@ pub struct KeyBinding {
     pub key: Style,
     pub description: Style,
     pub surrounding: Style,
+    pub block: Style,
 }
 
 pub struct Timer {
@@ -25,12 +26,13 @@ pub struct History {
 }
 
 pub const THEME: Theme = Theme {
-    root: Style::new().bg(CHARCOAL_BROWN),
-    logo: Style::new().fg(MOSS_GREEN),
+    root: Style::new().bg(CHARCOAL_BROWN).fg(CHARCOAL_BROWN),
+    logo: Style::new().bg(CHARCOAL_BROWN).fg(MOSS_GREEN),
     key_binding: KeyBinding {
         key: Style::new().fg(MOSS_GREEN).bg(CHARCOAL_BROWN_DARK),
         description: Style::new().fg(MOSS_GREEN).bg(CHARCOAL_BROWN_LIGHT),
         surrounding: Style::new().fg(MOSS_GREEN).bg(CHARCOAL_BROWN_LIGHT),
+        block: Style::new().fg(MOSS_GREEN).bg(CHARCOAL_BROWN),
     },
     timer: Timer {
         active: Style::new().bg(LIGHT_GREEN).fg(MOSS_GREEN),
