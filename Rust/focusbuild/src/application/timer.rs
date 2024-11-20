@@ -343,6 +343,23 @@ impl Timer {
             balance_digit_area.x += digit_size.1 + 1;
         }
     }
+    pub fn draw_keybinds(&self, area: Rect, buf: &mut Buffer) {
+        let keys = [("Quit", "Q"), ("Focus", "F"), ("Break", "B")];
+
+        let spans: Vec<Span> = keys
+            .iter()
+            .flat_map(|(desc, key)| {
+                let key = Span::styled(format!(" {key} "), THEME.key_binding.key);
+                let desc = Span::styled(format!(" {desc} "), THEME.key_binding.description);
+                [key, desc]
+            })
+            .collect();
+        Line::from(spans)
+            .centered()
+            .style(THEME.key_binding.surrounding)
+            .render(area, buf);
+    }
+}
 
 impl Widget for &Timer {
     fn render(self, area: Rect, buf: &mut Buffer) {
@@ -357,6 +374,13 @@ impl Widget for &Timer {
             .render(title_area, buf);
 
         let timers_area = Rect::new((area.width - 109) / 2, title_area.y + 6, 109, 9);
+        let keybinds_area = Rect::new(
+            timers_area.x,
+            timers_area.y + timers_area.height,
+            timers_area.width,
+            3,
+        );
         self.draw_timers(timers_area, buf);
+        self.draw_keybinds(keybinds_area, buf);
     }
 }
