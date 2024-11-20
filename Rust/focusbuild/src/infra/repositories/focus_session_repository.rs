@@ -1,4 +1,4 @@
-use chrono::{DateTime, Local};
+use chrono::{DateTime, FixedOffset, Local};
 use color_eyre::Result;
 use rusqlite::params;
 
@@ -52,12 +52,19 @@ impl FocusSessionRepository {
         // Use query_map to map each row to a FocusSession struct
         let focus_sessions_iter = stmt.query_map([], |row| {
             // Parse the datetime as FixedOffset first
+            //// Parse the date-time with the custom format
             let start: String = row.get(1)?;
-            let start_fixed_offset = DateTime::parse_from_rfc3339(&start).unwrap_or_default();
+            let start_fixed_offset: DateTime<FixedOffset> =
+                start.parse::<DateTime<FixedOffset>>().map_err(|e| {
+                    rusqlite::Error::FromSqlConversionFailure(
+                        0,
+                        rusqlite::types::Type::Text,
+                        Box::new(e),
+                    )
+                })?;
 
-            // Convert from FixedOffset to Local
+            // Convert to Local timezone
             let start_local = start_fixed_offset.with_timezone(&Local);
-
             Ok(FocusSession {
                 id: row.get(0)?,
                 start: start_local,
