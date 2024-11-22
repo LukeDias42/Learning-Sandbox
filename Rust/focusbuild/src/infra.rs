@@ -1,2 +1,2 @@
-pub mod db;
+mod db;
 pub mod repositories;

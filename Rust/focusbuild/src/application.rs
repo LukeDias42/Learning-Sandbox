@@ -1,6 +1,8 @@
 pub mod app;
-pub mod history;
-pub mod main_menu;
-pub mod theme;
-pub mod timer;
-pub mod town;
+mod history;
+mod main_menu;
+mod main_menu_font;
+mod theme;
+mod timer;
+mod timer_font;
+mod town;
