@@ -6,6 +6,7 @@ use std::time::Instant;
 use ratatui::{
     buffer::Buffer,
     layout::Rect,
+    style::Style,
     text::{Line, Span, Text},
     widgets::{Block, Borders, Padding, Widget},
 };
@@ -15,114 +16,10 @@ use crate::{
     infra::repositories::focus_session_repository::FocusSessionRepository,
 };
 
-use super::app::{KeyPressResult, Mode, RemoveFromStack, Screen};
-
-const FOCUS_TITLE_HEIGHT: u16 = 6;
-const FOCUS_TITLE_WIDTH: u16 = 45;
-const FOCUS_TITLE: &str = "███████╗ ██████╗  ██████╗██╗   ██╗███████╗██╗
-██╔════╝██╔═══██╗██╔════╝██║   ██║██╔════╝██║
-█████╗  ██║   ██║██║     ██║   ██║███████╗██║
-██╔══╝  ██║   ██║██║     ██║   ██║╚════██║╚═╝
-██║     ╚██████╔╝╚██████╗╚██████╔╝███████║██╗
-╚═╝      ╚═════╝  ╚═════╝ ╚═════╝ ╚══════╝╚═╝";
-const DIGIT_SIZE_MAP: [(&str, u16); 12] = [
-    (
-        " ████ 
-██  ██
-██  ██
-██  ██
- ████ ",
-        6,
-    ),
-    (
-        "████  
-  ██  
-  ██  
-  ██  
-██████",
-        6,
-    ),
-    (
-        " ████ 
-██  ██
-   ██ 
- ██   
-██████",
-        6,
-    ),
-    (
-        " ████ 
-██  ██
-   ██
-██  ██
- ████ ",
-        6,
-    ),
-    (
-        "██  ██
-██  ██
-██████
-    ██
-    ██",
-        6,
-    ),
-    (
-        "██████
-██    
-█████ 
-    ██
-█████ ",
-        6,
-    ),
-    (
-        " ████ 
-██    
-█████ 
-██  ██
- ████ ",
-        6,
-    ),
-    (
-        "██████
-   ██ 
-  ██  
- ██   
-██    ",
-        6,
-    ),
-    (
-        " ████ 
-██  ██
- ████ 
-██  ██
- ████ ",
-        6,
-    ),
-    (
-        " ████ 
-██  ██
- █████
-    ██
- ████ ",
-        6,
-    ),
-    (
-        "  
-██
-  
-██
-    ",
-        2,
-    ),
-    (
-        "   
-   
-███
-   
-      ",
-        3,
-    ),
-];
+use super::{
+    app::{KeyPressResult, Mode, RemoveFromStack, Screen},
+    timer_font::TimerFont,
+};
 pub struct Timer {
     stopwatch: Instant,
     focus_time: Vec<u64>,
@@ -179,40 +76,43 @@ impl Timer {
         digits.reverse();
         digits
     }
-    pub fn timer_digits_size_vector(mut elapsed_seconds: i64) -> Vec<(String, u16)> {
+    pub fn timer_digits_size_vector(
+        mut elapsed_seconds: i64,
+        digit_width_map: &Vec<(String, u16)>,
+    ) -> Vec<(String, u16)> {
         let mut timer_digits = Vec::new();
         if elapsed_seconds < 0 {
-            timer_digits.push((DIGIT_SIZE_MAP[11].0.to_string(), DIGIT_SIZE_MAP[11].1));
+            timer_digits.push((digit_width_map[11].0.to_string(), digit_width_map[11].1));
             elapsed_seconds *= -1;
         }
 
         let hours = elapsed_seconds / 3600;
         if hours < 10 {
-            timer_digits.push((DIGIT_SIZE_MAP[0].0.to_string(), DIGIT_SIZE_MAP[0].1));
+            timer_digits.push((digit_width_map[0].0.to_string(), digit_width_map[0].1));
             if hours == 0 {
-                timer_digits.push((DIGIT_SIZE_MAP[0].0.to_string(), DIGIT_SIZE_MAP[0].1));
+                timer_digits.push((digit_width_map[0].0.to_string(), digit_width_map[0].1));
             }
         }
         for number in Timer::get_number_digits(hours) {
             timer_digits.push((
-                DIGIT_SIZE_MAP[number].0.to_string(),
-                DIGIT_SIZE_MAP[number].1,
+                digit_width_map[number].0.to_string(),
+                digit_width_map[number].1,
             ));
         }
-        timer_digits.push((DIGIT_SIZE_MAP[10].0.to_string(), DIGIT_SIZE_MAP[10].1));
+        timer_digits.push((digit_width_map[10].0.to_string(), digit_width_map[10].1));
 
         let minutes = (elapsed_seconds / 60) - hours * 60;
 
         if minutes < 10 {
-            timer_digits.push((DIGIT_SIZE_MAP[0].0.to_string(), DIGIT_SIZE_MAP[0].1));
+            timer_digits.push((digit_width_map[0].0.to_string(), digit_width_map[0].1));
             if minutes == 0 {
-                timer_digits.push((DIGIT_SIZE_MAP[0].0.to_string(), DIGIT_SIZE_MAP[0].1));
+                timer_digits.push((digit_width_map[0].0.to_string(), digit_width_map[0].1));
             }
         }
         for number in Timer::get_number_digits(minutes) {
             timer_digits.push((
-                DIGIT_SIZE_MAP[number].0.to_string(),
-                DIGIT_SIZE_MAP[number].1,
+                digit_width_map[number].0.to_string(),
+                digit_width_map[number].1,
             ));
         }
         return timer_digits;
@@ -261,86 +161,90 @@ impl Timer {
         Ok(())
     }
 
-    pub fn draw_timers(&self, area: Rect, buf: &mut Buffer) {
+    pub fn draw_timers(&self, area: Rect, buf: &mut Buffer, timer_font: TimerFont) {
         Block::new()
             .borders(Borders::ALL)
             .padding(Padding::symmetric(2, 3))
             .style(THEME.timer.title)
             .render(area, buf);
 
-        let focus_block_area = Rect::new(area.x + 1, area.y + 1, 34, 7);
-        let focus_seconds = self.get_focus_time();
-        Block::new()
-            .borders(Borders::ALL)
-            .title("focus")
-            .style(if self.is_focusing {
+        let focus_block_area = Rect::new(
+            area.x + 1,
+            area.y + 1,
+            timer_font.digits.stopwatchs_width + 2 + timer_font.digits.gap * 6,
+            timer_font.digits.height + 2,
+        );
+        self.draw_timer(
+            focus_block_area,
+            buf,
+            if self.is_focusing {
                 THEME.timer.active
             } else {
                 THEME.timer.inactive
-            })
-            .render(focus_block_area, buf);
-        let focus_digits = Timer::timer_digits_size_vector(focus_seconds as i64);
-        let mut focus_digit_area = Rect::new(focus_block_area.x + 2, focus_block_area.y + 1, 6, 5);
-        for digit_size in focus_digits {
-            Text::raw(digit_size.0)
-                .style(if self.is_focusing {
-                    THEME.timer.active
-                } else {
-                    THEME.timer.inactive
-                })
-                .render(focus_digit_area, buf);
-            focus_digit_area.x += digit_size.1 + 1;
-        }
+            },
+            self.get_focus_time() as i64,
+            &timer_font,
+        );
 
         let break_block_area = Rect::new(
-            focus_block_area.x + focus_block_area.width + 1,
+            focus_block_area.x + focus_block_area.width,
             focus_block_area.y,
             focus_block_area.width,
             focus_block_area.height,
         );
-        let break_seconds = self.get_break_time();
-        Block::new()
-            .borders(Borders::ALL)
-            .title("break")
-            .style(if self.is_focusing {
+
+        self.draw_timer(
+            break_block_area,
+            buf,
+            if self.is_focusing {
                 THEME.timer.inactive
             } else {
                 THEME.timer.active
-            })
-            .render(break_block_area, buf);
-        let break_digits = Timer::timer_digits_size_vector(break_seconds as i64);
-        let mut break_digits_area = Rect::new(break_block_area.x + 2, break_block_area.y + 1, 6, 5);
-        for digit_size in break_digits {
-            Text::raw(digit_size.0)
-                .style(if self.is_focusing {
-                    THEME.timer.inactive
-                } else {
-                    THEME.timer.active
-                })
-                .render(break_digits_area, buf);
-            break_digits_area.x += digit_size.1 + 1;
-        }
+            },
+            self.get_break_time() as i64,
+            &timer_font,
+        );
 
         let balance_block_area = Rect::new(
-            break_block_area.x + break_block_area.width + 1,
+            break_block_area.x + break_block_area.width,
             break_block_area.y,
-            37,
-            7,
+            timer_font.digits.balance_width + 2 + timer_font.digits.gap * 7,
+            timer_font.digits.height + 2,
         );
         let balance_seconds = self.get_focus_time() as i64 / 3 - self.get_break_time() as i64;
+        self.draw_timer(
+            balance_block_area,
+            buf,
+            THEME.timer.inactive,
+            balance_seconds,
+            &timer_font,
+        );
+    }
+    fn draw_timer(
+        &self,
+        area: Rect,
+        buf: &mut Buffer,
+        style: Style,
+        seconds: i64,
+        timer_font: &TimerFont,
+    ) {
         Block::new()
             .borders(Borders::ALL)
-            .title("balance")
-            .style(THEME.timer.inactive)
-            .render(balance_block_area, buf);
-        let balance_digits = Timer::timer_digits_size_vector(balance_seconds as i64);
-        let mut balance_digit_area =
-            Rect::new(balance_block_area.x + 1, balance_block_area.y + 1, 6, 5);
-        for digit_size in balance_digits {
-            Text::raw(digit_size.0)
-                .style(THEME.timer.inactive)
-                .render(balance_digit_area, buf);
-            balance_digit_area.x += digit_size.1 + 1;
+            .title("focus")
+            .style(style)
+            .render(area, buf);
+        let focus_digits =
+            Timer::timer_digits_size_vector(seconds, &timer_font.digits.digit_width_map);
+        let mut current_x = area.x + 1 + timer_font.digits.gap;
+        for (digit, size) in focus_digits {
+            let focus_digit_area = Rect::new(
+                current_x,
+                area.y + 1,
+                size.clone(),
+                timer_font.digits.height,
+            );
+            Text::raw(digit).style(style).render(focus_digit_area, buf);
+            current_x += size + timer_font.digits.gap;
         }
     }
     pub fn draw_keybinds(&self, area: Rect, buf: &mut Buffer) {
@@ -363,24 +267,35 @@ impl Timer {
 
 impl Widget for &Timer {
     fn render(self, area: Rect, buf: &mut Buffer) {
-        let title_area = Rect::new(
-            area.width / 4 + (area.width / 4 - FOCUS_TITLE_WIDTH / 2),
-            area.height / 4 - FOCUS_TITLE_HEIGHT,
-            area.width / 2,
-            area.height / 2,
-        );
-        Text::raw(FOCUS_TITLE)
+        let timer_font = TimerFont::new(area.width, area.height);
+        let timer_block_total_height = timer_font.digits.height + 4;
+        let total_text_height = timer_block_total_height + 1 + timer_font.title.height;
+        let x = ((area.width as i16 - timer_font.title.width as i16) / 2 + timer_font.title.offset)
+            as u16;
+        let y = ((area.height as i16 - total_text_height as i16) / 2) as u16;
+        let title_area = Rect::new(x, y, timer_font.title.width, timer_font.title.height);
+        Text::raw(timer_font.title.text.clone())
             .style(THEME.timer.title)
             .render(title_area, buf);
 
-        let timers_area = Rect::new((area.width - 109) / 2, title_area.y + 6, 109, 9);
+        let timer_block_total_width =
+            (timer_font.digits.stopwatchs_width + 2 + timer_font.digits.gap * 6 + 2) * 2
+                + timer_font.digits.balance_width
+                + timer_font.digits.gap * 7;
+
+        let timers_area = Rect::new(
+            (area.width - timer_block_total_width) / 2 - 2,
+            title_area.y + title_area.height,
+            timer_block_total_width,
+            timer_block_total_height,
+        );
         let keybinds_area = Rect::new(
             timers_area.x,
             timers_area.y + timers_area.height,
             timers_area.width,
             3,
         );
-        self.draw_timers(timers_area, buf);
+        self.draw_timers(timers_area, buf, timer_font);
         self.draw_keybinds(keybinds_area, buf);
     }
 }
