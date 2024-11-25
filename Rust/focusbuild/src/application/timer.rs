@@ -183,6 +183,7 @@ impl Timer {
                 THEME.timer.inactive
             },
             self.get_focus_time() as i64,
+            "Focus",
             &timer_font,
         );
 
@@ -202,6 +203,7 @@ impl Timer {
                 THEME.timer.active
             },
             self.get_break_time() as i64,
+            "Break",
             &timer_font,
         );
 
@@ -217,6 +219,7 @@ impl Timer {
             buf,
             THEME.timer.inactive,
             balance_seconds,
+            "Balance",
             &timer_font,
         );
     }
@@ -226,11 +229,12 @@ impl Timer {
         buf: &mut Buffer,
         style: Style,
         seconds: i64,
+        title: &str,
         timer_font: &TimerFont,
     ) {
         Block::new()
             .borders(Borders::ALL)
-            .title("focus")
+            .title(title)
             .style(style)
             .render(area, buf);
         let focus_digits =
