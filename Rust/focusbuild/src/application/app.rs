@@ -68,10 +68,7 @@ impl App {
         let terminal = Terminal::new(backend)?;
         let mut ratatui_terminal = ratatui::init();
         while self.is_running() {
-            let terminal_size = terminal.size()?;
-            let width = terminal_size.width;
-            let height = terminal_size.height;
-            let area = Rect::new(0, 0, width, height);
+            let area = self.update_screen_size(&terminal)?;
             ratatui_terminal
                 .draw(|frame| self.draw(frame, area))
                 .wrap_err("terminal.draw")?;
@@ -80,10 +77,27 @@ impl App {
         Ok(())
     }
 
+    fn update_screen_size(
+        &mut self,
+        terminal: &Terminal<CrosstermBackend<Stdout>>,
+    ) -> Result<Rect> {
+        let terminal_size = terminal.size()?;
+        let width = terminal_size.width;
+        let height = terminal_size.height;
+        let area = Rect::new(0, 0, width, height);
+
+        let history_max_visible = ((area.height) / 4) as usize - 2;
+        if self.history.max_visible != history_max_visible {
+            self.history.update_max_visible(history_max_visible);
+        }
+
         let data_max_visible = (area.width / 13) as usize;
         if self.data.max_visible != data_max_visible {
             self.data.update_max_visible(data_max_visible);
         }
+
+        Ok(area)
+    }
 
     fn handle_events(&mut self) -> Result<()> {
         let timeout = Duration::from_secs_f64(1.0 / 60.0);

@@ -27,7 +27,7 @@ impl MainMenu {
                 KeyPressResult(Screen::History, Mode::Running, RemoveFromStack(false))
             }
             KeyCode::Char('d') | KeyCode::Char('D') => {
-                KeyPressResult(Screen::MainMenu, Mode::Running, RemoveFromStack(false))
+                KeyPressResult(Screen::Data, Mode::Running, RemoveFromStack(false))
             }
             KeyCode::Char('t') | KeyCode::Char('T') => {
                 KeyPressResult(Screen::Town, Mode::Running, RemoveFromStack(false))
