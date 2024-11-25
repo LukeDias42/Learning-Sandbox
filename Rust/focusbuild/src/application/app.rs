@@ -1,4 +1,7 @@
-use std::{io::stdout, time::Duration};
+use std::{
+    io::{stdout, Stdout},
+    time::Duration,
+};
 
 use color_eyre::{eyre::Context, Result};
 use crossterm::event::{self, Event, KeyEvent, KeyEventKind};
@@ -11,7 +14,7 @@ use ratatui::{
 };
 
 use crate::application::{
-    history::History, main_menu::MainMenu, theme::THEME, timer::Timer, town::Town,
+    data::Data, history::History, main_menu::MainMenu, theme::THEME, timer::Timer, town::Town,
 };
 
 pub struct App {
@@ -21,6 +24,7 @@ pub struct App {
     pub timer: Timer,
     pub history: History,
     pub town: Town,
+    pub data: Data,
 }
 
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
@@ -30,6 +34,7 @@ pub enum Screen {
     Timer,
     Town,
     History,
+    Data,
     None,
 }
 
@@ -55,6 +60,7 @@ impl App {
             main_menu: MainMenu::default(),
             history: History::new()?,
             town: Town::default(),
+            data: Data::new()?,
         })
     }
     pub fn run(mut self) -> Result<()> {
@@ -73,6 +79,11 @@ impl App {
         }
         Ok(())
     }
+
+        let data_max_visible = (area.width / 13) as usize;
+        if self.data.max_visible != data_max_visible {
+            self.data.update_max_visible(data_max_visible);
+        }
 
     fn handle_events(&mut self) -> Result<()> {
         let timeout = Duration::from_secs_f64(1.0 / 60.0);
@@ -99,6 +110,7 @@ impl App {
             Screen::MainMenu => self.main_menu.handle_key_press(key)?,
             Screen::Timer => self.timer.handle_key_press(key)?,
             Screen::History => self.history.handle_key_press(key)?,
+            Screen::Data => self.history.handle_key_press(key)?,
             Screen::Town => self.town.handle_key_press(key)?,
             _ => key_press_result,
         };
@@ -140,6 +152,7 @@ impl Widget for &App {
                 Screen::Timer => self.timer.render(area, buf),
                 Screen::History => self.history.render(area, buf),
                 Screen::Town => self.town.render(area, buf),
+                Screen::Data => self.data.render(area, buf),
                 _ => {}
             }
         }
