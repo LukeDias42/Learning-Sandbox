@@ -1,10 +1,11 @@
-use ratatui::style::{Color, Style};
+use ratatui::style::{palette::material::WHITE, Color, Style};
 pub struct Theme {
     pub root: Style,
     pub key_binding: KeyBinding,
     pub logo: Style,
     pub timer: Timer,
     pub history: History,
+    pub data: Data,
 }
 
 pub struct KeyBinding {
@@ -20,6 +21,11 @@ pub struct Timer {
     pub title: Style,
 }
 
+pub struct Data {
+    pub break_bar: Style,
+    pub focus_bar: Style,
+    pub block: Style,
+}
 pub struct History {
     pub style: Style,
     pub border: Style,
@@ -43,6 +49,11 @@ pub const THEME: Theme = Theme {
         style: Style::new().bg(CHARCOAL_BROWN).fg(MOSS_GREEN),
         border: Style::new().fg(MOSS_GREEN),
     },
+    data: Data {
+        break_bar: Style::new().bg(CHARCOAL_BROWN).fg(LIGHT_RED),
+        focus_bar: Style::new().bg(CHARCOAL_BROWN).fg(LIGHT_GREEN),
+        block: Style::new().bg(LIGHT_RED).fg(WHITE),
+    },
 };
 
 pub const CHARCOAL_BROWN: Color = Color::Rgb(60, 48, 42);
@@ -50,7 +61,7 @@ pub const CHARCOAL_BROWN_DARK: Color = Color::Rgb(40, 28, 22);
 pub const CHARCOAL_BROWN_LIGHT: Color = Color::Rgb(80, 68, 62);
 pub const MOSS_GREEN: Color = Color::Rgb(138, 154, 91);
 // pub const LIGHT_GRAY: Color = Color::Rgb(0xC2, 0xC2, 0xC2);
-// pub const LIGHT_RED: Color = Color::Rgb(0xFF, 0xC2, 0xC2);
+pub const LIGHT_RED: Color = Color::Rgb(0xFF, 0xC2, 0xC2);
 pub const LIGHT_GREEN: Color = Color::Rgb(0xC2, 0xFF, 0xC2);
 // pub const LIGHT_BLUE: Color = Color::Rgb(0xC2, 0xC2, 0xFF);
 // pub const DARK_GRAY: Color = Color::Rgb(0x22, 0x22, 0x22);
