@@ -86,15 +86,8 @@ impl App {
         let height = terminal_size.height;
         let area = Rect::new(0, 0, width, height);
 
-        let history_max_visible = ((area.height) / 4) as usize - 2;
-        if self.history.max_visible != history_max_visible {
-            self.history.update_max_visible(history_max_visible);
-        }
-
-        let data_max_visible = (area.width / 13) as usize;
-        if self.data.max_visible != data_max_visible {
-            self.data.update_max_visible(data_max_visible);
-        }
+        self.history.update_max_visible(area.height as usize);
+        self.data.update_max_visible(area.width as usize);
 
         Ok(area)
     }
@@ -124,7 +117,7 @@ impl App {
             Screen::MainMenu => self.main_menu.handle_key_press(key)?,
             Screen::Timer => self.timer.handle_key_press(key)?,
             Screen::History => self.history.handle_key_press(key)?,
-            Screen::Data => self.history.handle_key_press(key)?,
+            Screen::Data => self.data.handle_key_press(key)?,
             Screen::Town => self.town.handle_key_press(key)?,
             _ => key_press_result,
         };
@@ -139,6 +132,9 @@ impl App {
                 }
                 if result.0 == Screen::History {
                     self.history = History::new()?
+                }
+                if result.0 == Screen::Data {
+                    self.data = Data::new()?
                 }
                 self.screen_stack.push(result.0);
             }

@@ -1,11 +1,13 @@
-use chrono::{Date, Duration, Local, NaiveDate};
+use std::collections::HashMap;
+
+use chrono::{Days, Local, NaiveTime};
 use color_eyre::Result;
 use crossterm::event::{KeyCode, KeyEvent};
 use ratatui::{
     buffer::Buffer,
     layout::Rect,
     text::{Line, Span},
-    widgets::{Block, Borders, Paragraph, Widget},
+    widgets::{Bar, BarChart, BarGroup, Block, Borders, Padding, Widget},
 };
 
 use crate::{
@@ -19,64 +21,139 @@ use super::{
 };
 
 pub struct Data {
-    focus_sessions: Vec<FocusSession>,
+    times_per_day: HashMap<i64, TotalTime>,
     scroll_offset: usize,
     pub max_visible: usize,
+    total_days: usize,
 }
 
-struct DayTotalFocus {
-    day: NaiveDate,
-    break_seconds: u64,
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
+struct TotalTime {
     focus_seconds: u64,
+    break_seconds: u64,
+}
+impl TotalTime {
+    fn new(focus_seconds: u64, break_seconds: u64) -> Self {
+        Self {
+            focus_seconds,
+            break_seconds,
+        }
+    }
 }
 
 impl Data {
     pub fn new() -> Result<Self> {
         let focus_sessions = FocusSessionRepository::new()?.select_many()?;
+        let (times_per_day, total_days) = Data::group_focus_sessions_by_date(focus_sessions);
         let timer = Self {
-            focus_sessions,
+            times_per_day,
             scroll_offset: 0,
             max_visible: 1,
+            total_days,
         };
         Ok(timer)
     }
+
+    fn group_focus_sessions_by_date(
+        focus_sessions: Vec<FocusSession>,
+    ) -> (HashMap<i64, TotalTime>, usize) {
+        let mut times_per_day: HashMap<i64, TotalTime> = HashMap::new();
+        let now = Local::now()
+            .with_time(NaiveTime::from_hms_opt(23, 59, 59).unwrap())
+            .unwrap();
+        let mut oldest = 0;
+        for focus_session in focus_sessions {
+            let days_ago = now.signed_duration_since(focus_session.start).num_days();
+            if days_ago > oldest {
+                oldest = days_ago;
+            }
+            times_per_day
+                .entry(days_ago)
+                .and_modify(|t| {
+                    t.focus_seconds += focus_session.focus_seconds;
+                    t.break_seconds += focus_session.break_seconds
+                })
+                .or_insert(TotalTime::new(
+                    focus_session.focus_seconds,
+                    focus_session.break_seconds,
+                ));
+        }
+        (times_per_day, oldest as usize)
+    }
+
     pub fn handle_key_press(&mut self, key: KeyEvent) -> Result<KeyPressResult> {
         Ok(match key.code {
             KeyCode::Char('q') | KeyCode::Esc => {
                 KeyPressResult(Screen::MainMenu, Mode::Running, RemoveFromStack(true))
             }
-            KeyCode::Up | KeyCode::Char('k') => {
+            KeyCode::Right | KeyCode::Char('l') => {
                 self.scroll_offset -= if self.scroll_offset == 0 { 0 } else { 1 };
-                KeyPressResult(Screen::History, Mode::Running, RemoveFromStack(false))
+                KeyPressResult(Screen::Data, Mode::Running, RemoveFromStack(false))
             }
-            KeyCode::Down | KeyCode::Char('j') => {
-                self.scroll_offset +=
-                    if self.scroll_offset == self.focus_sessions.len() - self.max_visible {
-                        0
-                    } else {
-                        1
-                    };
-                KeyPressResult(Screen::History, Mode::Running, RemoveFromStack(false))
+            KeyCode::Left | KeyCode::Char('h') => {
+                self.scroll_offset += if self.max_visible > self.total_days
+                    || self.scroll_offset == self.total_days - self.max_visible
+                {
+                    0
+                } else {
+                    1
+                };
+                KeyPressResult(Screen::Data, Mode::Running, RemoveFromStack(false))
             }
-            _ => KeyPressResult(Screen::History, Mode::Running, RemoveFromStack(false)),
+            _ => KeyPressResult(Screen::Data, Mode::Running, RemoveFromStack(false)),
         })
     }
-    pub fn draw_entries(&self, area: Rect, buf: &mut Buffer) {
-        Block::new()
-            .title("statistics")
-            .borders(Borders::ALL)
-            .style(THEME.history.border)
-            .render(area, buf);
-
-        let visible_sessions = self
-            .focus_sessions
-            .iter()
-            .skip(self.scroll_offset)
-            .take(self.max_visible);
+    pub fn draw_days_graph(&self, area: Rect, buf: &mut Buffer) {
+        let mut barchart = BarChart::default()
+            .block(
+                Block::new()
+                    .title("Statistics")
+                    .borders(Borders::ALL)
+                    .padding(Padding::new(1, 1, 1, 0))
+                    .style(THEME.logo),
+            )
+            .bar_gap(1)
+            .bar_width(5)
+            .group_gap(2)
+            .label_style(THEME.logo);
+        let start = self.scroll_offset as i64;
+        let end = start + self.max_visible as i64;
+        for bar_group in (start..end)
+            .rev()
+            .map(|days_ago| {
+                let total_time = match self.times_per_day.get(&days_ago) {
+                    Some(t) => t,
+                    None => &TotalTime::new(0, 0),
+                };
+                let focus_bar = Bar::default()
+                    .label("focus".into())
+                    .value(total_time.focus_seconds)
+                    .text_value((total_time.focus_seconds / 60).to_string())
+                    .style(THEME.data.focus_bar);
+                let break_bar = Bar::default()
+                    .label("break".into())
+                    .value(total_time.break_seconds)
+                    .text_value((total_time.break_seconds / 60).to_string())
+                    .style(THEME.data.break_bar);
+                (days_ago, vec![focus_bar, break_bar])
+            })
+            .map(|(days_ago, bars)| {
+                let day = Local::now()
+                    .checked_sub_days(Days::new(days_ago as u64))
+                    .unwrap()
+                    .format("%m/%d");
+                BarGroup::default()
+                    .label(Line::from(format!("{day}")))
+                    .bars(&bars)
+            })
+        {
+            barchart = barchart.data(bar_group).style(THEME.data.block);
+        }
+        barchart.render(area, buf);
     }
 
     pub fn draw_keybinds(&self, area: Rect, buf: &mut Buffer) {
-        let keys = [("Quit", "Q"), ("Up", "K/↑"), ("Down", "J/↓")];
+        let keys = [("Quit", "Q"), ("Left", "H/↑"), ("Right", "L/↓")];
 
         let spans: Vec<Span> = keys
             .iter()
@@ -92,10 +169,12 @@ impl Data {
             .render(area, buf);
     }
 
-    pub fn update_max_visible(&mut self, max_visible: usize) {
-        self.max_visible = max_visible;
-        if self.scroll_offset > self.focus_sessions.len() - self.max_visible {
-            self.scroll_offset = self.focus_sessions.len() - self.max_visible;
+    pub fn update_max_visible(&mut self, width: usize) {
+        self.max_visible = ((width - 7) / 13) as usize;
+        if self.total_days < self.max_visible {
+            self.scroll_offset = 0;
+        } else if self.scroll_offset > self.total_days - self.max_visible {
+            self.scroll_offset = self.total_days - self.max_visible;
         };
     }
 }
@@ -108,7 +187,7 @@ impl Widget for &Data {
             graph_area.width,
             1,
         );
-        self.draw_entries(graph_area, buf);
+        self.draw_days_graph(graph_area, buf);
         self.draw_keybinds(keybinds_area, buf);
     }
 }

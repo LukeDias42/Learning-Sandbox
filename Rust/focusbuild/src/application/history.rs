@@ -57,7 +57,7 @@ impl History {
             _ => KeyPressResult(Screen::History, Mode::Running, RemoveFromStack(false)),
         })
     }
-    pub fn draw_days_graph(&self, area: Rect, buf: &mut Buffer) {
+    pub fn draw_entries(&self, area: Rect, buf: &mut Buffer) {
         Block::new()
             .title("history")
             .borders(Borders::ALL)
@@ -118,11 +118,11 @@ impl History {
             .render(area, buf);
     }
 
-    pub fn update_max_visible(&mut self, max_visible: usize) {
-        self.max_visible = max_visible;
-        if self.max_visible < self.focus_sessions.len()
-            && self.scroll_offset > self.focus_sessions.len() - self.max_visible
-        {
+    pub fn update_max_visible(&mut self, height: usize) {
+        self.max_visible = ((height) / 4) as usize - 2;
+        if self.max_visible < self.focus_sessions.len() {
+            self.scroll_offset = 0
+        } else if self.scroll_offset > self.focus_sessions.len() - self.max_visible {
             self.scroll_offset = self.focus_sessions.len() - self.max_visible;
         };
     }
@@ -141,7 +141,7 @@ impl Widget for &History {
             history_area.width,
             3,
         );
-        self.draw_days_graph(history_area, buf);
+        self.draw_entries(history_area, buf);
         self.draw_keybinds(keybinds_area, buf);
     }
 }
