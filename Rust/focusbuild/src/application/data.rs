@@ -42,6 +42,10 @@ impl TotalTime {
 }
 
 impl Data {
+    const BAR_GAP: u16 = 1;
+    const BAR_WIDTH: u16 = 5;
+    const GROUP_GAP: u16 = 2;
+
     pub fn new() -> Result<Self> {
         let focus_sessions = FocusSessionRepository::new()?.select_many()?;
         let (times_per_day, total_days) = Data::group_focus_sessions_by_date(focus_sessions);
@@ -78,7 +82,7 @@ impl Data {
                     focus_session.break_seconds,
                 ));
         }
-        (times_per_day, oldest as usize)
+        (times_per_day, oldest as usize + 1)
     }
 
     pub fn handle_key_press(&mut self, key: KeyEvent) -> Result<KeyPressResult> {
@@ -112,9 +116,9 @@ impl Data {
                     .padding(Padding::new(1, 1, 1, 0))
                     .style(THEME.logo),
             )
-            .bar_gap(1)
-            .bar_width(5)
-            .group_gap(2)
+            .bar_gap(Self::BAR_GAP)
+            .bar_width(Self::BAR_WIDTH)
+            .group_gap(Self::GROUP_GAP)
             .label_style(THEME.logo);
         let start = self.scroll_offset as i64;
         let end = start + self.max_visible as i64;
@@ -153,7 +157,7 @@ impl Data {
     }
 
     pub fn draw_keybinds(&self, area: Rect, buf: &mut Buffer) {
-        let keys = [("Quit", "Q"), ("Left", "H/↑"), ("Right", "L/↓")];
+        let keys = [("Quit", "Q"), ("Left", "H/←"), ("Right", "L/→")];
 
         let spans: Vec<Span> = keys
             .iter()
@@ -170,7 +174,9 @@ impl Data {
     }
 
     pub fn update_max_visible(&mut self, width: usize) {
-        self.max_visible = ((width - 7) / 13) as usize;
+        self.max_visible = ((width - 2)
+            / (2 * Self::BAR_WIDTH + 2 * Self::BAR_GAP + Self::GROUP_GAP) as usize)
+            as usize;
         if self.total_days < self.max_visible {
             self.scroll_offset = 0;
         } else if self.scroll_offset > self.total_days - self.max_visible {
