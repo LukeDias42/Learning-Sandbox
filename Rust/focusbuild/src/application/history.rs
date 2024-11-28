@@ -67,6 +67,7 @@ impl History {
         let visible_sessions = self
             .focus_sessions
             .iter()
+            .rev()
             .skip(self.scroll_offset)
             .take(self.max_visible);
 
@@ -120,7 +121,7 @@ impl History {
 
     pub fn update_max_visible(&mut self, height: usize) {
         self.max_visible = ((height) / 4) as usize - 2;
-        if self.max_visible < self.focus_sessions.len() {
+        if self.max_visible > self.focus_sessions.len() {
             self.scroll_offset = 0
         } else if self.scroll_offset > self.focus_sessions.len() - self.max_visible {
             self.scroll_offset = self.focus_sessions.len() - self.max_visible;
