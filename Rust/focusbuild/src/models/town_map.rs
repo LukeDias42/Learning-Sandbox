@@ -1,3 +1,15 @@
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct TownMap {
+    pub map: Vec<Vec<Tile>>,
+    pub name: String,
+}
+
+impl TownMap {
+    pub fn new(map: Vec<Vec<Tile>>, name: String) -> Self {
+        Self { map, name }
+    }
+}
+
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
 pub struct Tile {
     pub object: Object,
