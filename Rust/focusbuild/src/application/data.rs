@@ -114,7 +114,7 @@ impl Data {
                     .title("Statistics")
                     .borders(Borders::ALL)
                     .padding(Padding::new(1, 1, 1, 0))
-                    .style(THEME.logo),
+                    .style(THEME.data.block),
             )
             .bar_gap(Self::BAR_GAP)
             .bar_width(Self::BAR_WIDTH)
@@ -151,7 +151,7 @@ impl Data {
                     .bars(&bars)
             })
         {
-            barchart = barchart.data(bar_group).style(THEME.data.block);
+            barchart = barchart.data(bar_group);
         }
         barchart.render(area, buf);
     }
