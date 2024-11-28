@@ -1,4 +1,15 @@
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
+pub struct Tile {
+    pub object: Object,
+    pub floor: Floor,
+}
+
+impl Tile {
+    pub fn new(object: Object, floor: Floor) -> Self {
+        Tile { object, floor }
+    }
+}
+
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
 pub enum Object {
     #[default]
@@ -15,6 +26,7 @@ pub enum Object {
     Road,
 }
 
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
 pub enum Floor {
     #[default]
     Grass,
