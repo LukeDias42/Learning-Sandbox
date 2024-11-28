@@ -6,15 +6,11 @@ use std::{
 use color_eyre::{eyre::Context, Result};
 use crossterm::event::{self, Event, KeyEvent, KeyEventKind};
 use ratatui::{
-    buffer::Buffer,
-    layout::Rect,
-    prelude::CrosstermBackend,
-    widgets::{Block, Widget},
-    Frame, Terminal,
+    buffer::Buffer, layout::Rect, prelude::CrosstermBackend, widgets::Widget, Frame, Terminal,
 };
 
 use crate::application::{
-    data::Data, history::History, main_menu::MainMenu, theme::THEME, timer::Timer, town::Town,
+    data::Data, history::History, main_menu::MainMenu, timer::Timer, town::Town,
 };
 
 pub struct App {
@@ -59,7 +55,7 @@ impl App {
             timer: Timer::new()?,
             main_menu: MainMenu::default(),
             history: History::new()?,
-            town: Town::default(),
+            town: Town::new()?,
             data: Data::new()?,
         })
     }
@@ -144,7 +140,12 @@ impl App {
     }
 
     fn draw(&self, frame: &mut Frame, area: Rect) {
-        frame.render_widget(self, area);
+        if let Some(screen) = self.screen_stack.last() {
+            match screen {
+                Screen::Town => self.town.draw(frame, area),
+                _ => frame.render_widget(self, area),
+            }
+        }
     }
 
     fn is_running(&self) -> bool {
@@ -154,14 +155,11 @@ impl App {
 
 impl Widget for &App {
     fn render(self, area: Rect, buf: &mut Buffer) {
-        let block = Block::new().style(THEME.root);
-        block.render(area, buf);
         if let Some(screen) = self.screen_stack.last() {
             match screen {
                 Screen::MainMenu => self.main_menu.render(area, buf),
                 Screen::Timer => self.timer.render(area, buf),
                 Screen::History => self.history.render(area, buf),
-                Screen::Town => self.town.render(area, buf),
                 Screen::Data => self.data.render(area, buf),
                 _ => {}
             }
