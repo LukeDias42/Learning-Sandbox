@@ -1,6 +1,6 @@
 use ratatui::style::Style;
 
-use crate::application::theme::THEME;
+use crate::application::theme::Theme;
 
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct TownMap {
@@ -72,13 +72,13 @@ pub enum Floor {
 }
 
 impl Floor {
-    pub fn to_style(self) -> Style {
+    pub fn to_style(self, theme: Theme) -> Style {
         match self {
-            Floor::River => THEME.town.river,
-            Floor::Grass => THEME.town.grass,
-            Floor::City => THEME.town.city,
-            Floor::Earth => THEME.town.earth,
-            Floor::Desert => THEME.town.desert,
+            Floor::River => theme.town.river,
+            Floor::Grass => theme.town.grass,
+            Floor::City => theme.town.city,
+            Floor::Earth => theme.town.earth,
+            Floor::Desert => theme.town.desert,
         }
     }
 }
