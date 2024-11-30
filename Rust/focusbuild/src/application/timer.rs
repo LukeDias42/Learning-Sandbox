@@ -12,12 +12,13 @@ use ratatui::{
 };
 
 use crate::{
-    application::theme::THEME,
     infra::repositories::focus_session_repository::FocusSessionRepository,
+    models::settings::Settings,
 };
 
 use super::{
     app::{KeyPressResult, Mode, RemoveFromStack, Screen},
+    theme::Theme,
     timer_font::TimerFont,
 };
 pub struct Timer {
@@ -27,10 +28,11 @@ pub struct Timer {
     start_date: DateTime<Local>,
     is_focusing: bool,
     focus_session_repository: FocusSessionRepository,
+    settings: Settings,
 }
 
 impl Timer {
-    pub fn new() -> Result<Self> {
+    pub fn new(settings: Settings) -> Result<Self> {
         let timer = Self {
             stopwatch: Instant::now(),
             focus_time: Vec::new(),
@@ -38,6 +40,7 @@ impl Timer {
             start_date: Local::now(),
             is_focusing: true,
             focus_session_repository: FocusSessionRepository::new()?,
+            settings,
         };
         Ok(timer)
     }
@@ -161,11 +164,11 @@ impl Timer {
         Ok(())
     }
 
-    pub fn draw_timers(&self, area: Rect, buf: &mut Buffer, timer_font: TimerFont) {
+    pub fn draw_timers(&self, area: Rect, buf: &mut Buffer, timer_font: TimerFont, theme: Theme) {
         Block::new()
             .borders(Borders::ALL)
             .padding(Padding::symmetric(2, 3))
-            .style(THEME.timer.title)
+            .style(theme.timer.title)
             .render(area, buf);
 
         let focus_block_area = Rect::new(
@@ -178,9 +181,9 @@ impl Timer {
             focus_block_area,
             buf,
             if self.is_focusing {
-                THEME.timer.active
+                theme.timer.active
             } else {
-                THEME.timer.inactive
+                theme.timer.inactive
             },
             self.get_focus_time() as i64,
             "Focus",
@@ -198,9 +201,9 @@ impl Timer {
             break_block_area,
             buf,
             if self.is_focusing {
-                THEME.timer.inactive
+                theme.timer.inactive
             } else {
-                THEME.timer.active
+                theme.timer.active
             },
             self.get_break_time() as i64,
             "Break",
@@ -217,7 +220,7 @@ impl Timer {
         self.draw_timer(
             balance_block_area,
             buf,
-            THEME.timer.inactive,
+            theme.timer.inactive,
             balance_seconds,
             "Balance",
             &timer_font,
@@ -251,26 +254,28 @@ impl Timer {
             current_x += size + timer_font.digits.gap;
         }
     }
-    pub fn draw_keybinds(&self, area: Rect, buf: &mut Buffer) {
+    pub fn draw_keybinds(&self, area: Rect, buf: &mut Buffer, theme: Theme) {
         let keys = [("Quit", "Q"), ("Focus", "F"), ("Break", "B")];
 
         let spans: Vec<Span> = keys
             .iter()
             .flat_map(|(desc, key)| {
-                let key = Span::styled(format!(" {key} "), THEME.key_binding.key);
-                let desc = Span::styled(format!(" {desc} "), THEME.key_binding.description);
+                let key = Span::styled(format!(" {key} "), theme.key_binding.key);
+                let desc = Span::styled(format!(" {desc} "), theme.key_binding.description);
                 [key, desc]
             })
             .collect();
         Line::from(spans)
             .centered()
-            .style(THEME.key_binding.surrounding)
+            .style(theme.key_binding.surrounding)
             .render(area, buf);
     }
 }
 
 impl Widget for &Timer {
     fn render(self, area: Rect, buf: &mut Buffer) {
+        let theme = Theme::new(self.settings.theme);
+
         let timer_font = TimerFont::new(area.width, area.height);
         let timer_block_total_height = timer_font.digits.height + 4;
         let total_text_height = timer_block_total_height + 1 + timer_font.title.height;
@@ -279,7 +284,7 @@ impl Widget for &Timer {
         let y = ((area.height as i16 - total_text_height as i16) / 2) as u16;
         let title_area = Rect::new(x, y, timer_font.title.width, timer_font.title.height);
         Text::raw(timer_font.title.text.clone())
-            .style(THEME.timer.title)
+            .style(theme.timer.title)
             .render(title_area, buf);
 
         let timer_block_total_width =
@@ -299,7 +304,7 @@ impl Widget for &Timer {
             timers_area.width,
             3,
         );
-        self.draw_timers(timers_area, buf, timer_font);
-        self.draw_keybinds(keybinds_area, buf);
+        self.draw_timers(timers_area, buf, timer_font, theme);
+        self.draw_keybinds(keybinds_area, buf, theme);
     }
 }
