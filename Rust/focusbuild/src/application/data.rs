@@ -12,12 +12,12 @@ use ratatui::{
 
 use crate::{
     infra::repositories::focus_session_repository::FocusSessionRepository,
-    models::focus_session::FocusSession,
+    models::{focus_session::FocusSession, settings::Settings},
 };
 
 use super::{
     app::{KeyPressResult, Mode, RemoveFromStack, Screen},
-    theme::THEME,
+    theme::Theme,
 };
 
 pub struct Data {
@@ -25,6 +25,7 @@ pub struct Data {
     scroll_offset: usize,
     pub max_visible: usize,
     total_days: usize,
+    settings: Settings,
 }
 
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
@@ -46,7 +47,7 @@ impl Data {
     const BAR_WIDTH: u16 = 5;
     const GROUP_GAP: u16 = 2;
 
-    pub fn new() -> Result<Self> {
+    pub fn new(settings: Settings) -> Result<Self> {
         let focus_sessions = FocusSessionRepository::new()?.select_many()?;
         let (times_per_day, total_days) = Data::group_focus_sessions_by_date(focus_sessions);
         let timer = Self {
@@ -54,6 +55,7 @@ impl Data {
             scroll_offset: 0,
             max_visible: 1,
             total_days,
+            settings,
         };
         Ok(timer)
     }
@@ -90,11 +92,14 @@ impl Data {
             KeyCode::Char('q') | KeyCode::Esc => {
                 KeyPressResult(Screen::MainMenu, Mode::Running, RemoveFromStack(true))
             }
-            KeyCode::Right | KeyCode::Char('l') => {
+            KeyCode::Right | KeyCode::Char('l') | KeyCode::Char('L') => {
                 self.scroll_offset -= if self.scroll_offset == 0 { 0 } else { 1 };
                 KeyPressResult(Screen::Data, Mode::Running, RemoveFromStack(false))
             }
-            KeyCode::Left | KeyCode::Char('h') => {
+            KeyCode::Char('s') | KeyCode::Char('S') => {
+                KeyPressResult(Screen::History, Mode::Running, RemoveFromStack(true))
+            }
+            KeyCode::Left | KeyCode::Char('h') | KeyCode::Char('H') => {
                 self.scroll_offset += if self.max_visible > self.total_days
                     || self.scroll_offset == self.total_days - self.max_visible
                 {
@@ -107,19 +112,19 @@ impl Data {
             _ => KeyPressResult(Screen::Data, Mode::Running, RemoveFromStack(false)),
         })
     }
-    pub fn draw_days_graph(&self, area: Rect, buf: &mut Buffer) {
+    pub fn draw_days_graph(&self, area: Rect, buf: &mut Buffer, theme: Theme) {
         let mut barchart = BarChart::default()
             .block(
                 Block::new()
                     .title("Statistics")
                     .borders(Borders::ALL)
                     .padding(Padding::new(1, 1, 1, 0))
-                    .style(THEME.data.block),
+                    .style(theme.data.block),
             )
             .bar_gap(Self::BAR_GAP)
             .bar_width(Self::BAR_WIDTH)
             .group_gap(Self::GROUP_GAP)
-            .label_style(THEME.logo);
+            .label_style(theme.logo);
         let start = self.scroll_offset as i64;
         let end = start + self.max_visible as i64;
         for bar_group in (start..end)
@@ -133,12 +138,12 @@ impl Data {
                     .label("focus".into())
                     .value(total_time.focus_seconds)
                     .text_value((total_time.focus_seconds / 60).to_string())
-                    .style(THEME.data.focus_bar);
+                    .style(theme.data.focus_bar);
                 let break_bar = Bar::default()
                     .label("break".into())
                     .value(total_time.break_seconds)
                     .text_value((total_time.break_seconds / 60).to_string())
-                    .style(THEME.data.break_bar);
+                    .style(theme.data.break_bar);
                 (days_ago, vec![focus_bar, break_bar])
             })
             .map(|(days_ago, bars)| {
@@ -156,20 +161,25 @@ impl Data {
         barchart.render(area, buf);
     }
 
-    pub fn draw_keybinds(&self, area: Rect, buf: &mut Buffer) {
-        let keys = [("Quit", "Q"), ("Left", "H/←"), ("Right", "L/→")];
+    pub fn draw_keybinds(&self, area: Rect, buf: &mut Buffer, theme: Theme) {
+        let keys = [
+            ("Quit", "Q"),
+            ("Left", "H/←"),
+            ("Right", "L/→"),
+            ("Sessions", "S"),
+        ];
 
         let spans: Vec<Span> = keys
             .iter()
             .flat_map(|(desc, key)| {
-                let key = Span::styled(format!(" {key} "), THEME.key_binding.key);
-                let desc = Span::styled(format!(" {desc} "), THEME.key_binding.description);
+                let key = Span::styled(format!(" {key} "), theme.key_binding.key);
+                let desc = Span::styled(format!(" {desc} "), theme.key_binding.description);
                 [key, desc]
             })
             .collect();
         Line::from(spans)
             .centered()
-            .style(THEME.key_binding.surrounding)
+            .style(theme.key_binding.surrounding)
             .render(area, buf);
     }
 
@@ -186,6 +196,8 @@ impl Data {
 }
 impl Widget for &Data {
     fn render(self, area: Rect, buf: &mut Buffer) {
+        let theme = Theme::new(self.settings.theme);
+
         let graph_area = Rect::new(area.x, area.y + 1, area.width, area.height - 6);
         let keybinds_area = Rect::new(
             graph_area.x,
@@ -193,7 +205,7 @@ impl Widget for &Data {
             graph_area.width,
             1,
         );
-        self.draw_days_graph(graph_area, buf);
-        self.draw_keybinds(keybinds_area, buf);
+        self.draw_days_graph(graph_area, buf, theme);
+        self.draw_keybinds(keybinds_area, buf, theme);
     }
 }
