@@ -6,4 +6,3 @@ mod main_menu_font;
 pub mod theme;
 mod timer;
 mod timer_font;
-mod town;

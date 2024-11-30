@@ -36,9 +36,6 @@ impl MainMenu {
             KeyCode::Char('d') | KeyCode::Char('D') => {
                 KeyPressResult(Screen::Data, Mode::Running, RemoveFromStack(false))
             }
-            KeyCode::Char('t') | KeyCode::Char('T') => {
-                KeyPressResult(Screen::Town, Mode::Running, RemoveFromStack(false))
-            }
             KeyCode::Char('q') | KeyCode::Char('Q') | KeyCode::Esc => {
                 KeyPressResult(Screen::None, Mode::Quit, RemoveFromStack(true))
             }

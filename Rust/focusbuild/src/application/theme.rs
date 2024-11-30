@@ -7,7 +7,6 @@ pub struct Theme {
     pub timer: Timer,
     pub history: History,
     pub data: Data,
-    pub town: Town,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -36,15 +35,6 @@ pub struct Data {
 pub struct History {
     pub style: Style,
     pub border: Style,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct Town {
-    pub river: Style,
-    pub grass: Style,
-    pub city: Style,
-    pub earth: Style,
-    pub desert: Style,
 }
 
 impl Theme {
@@ -79,13 +69,6 @@ const BLOOD_RIVER: Theme = Theme {
         focus_bar: Style::new().fg(FOCUS_GREEN),
         block: Style::new().fg(Color::White),
     },
-    town: Town {
-        river: Style::new().fg(DEEP_BLUE).bg(Color::Cyan),
-        grass: Style::new().bg(Color::LightGreen),
-        city: Style::new().bg(Color::DarkGray),
-        earth: Style::new().bg(CHARCOAL_BROWN),
-        desert: Style::new().bg(LIGHT_SAND_COLOR),
-    },
 };
 
 const GALAXY_BLUE: Theme = Theme {
@@ -109,13 +92,6 @@ const GALAXY_BLUE: Theme = Theme {
         break_bar: Style::new().fg(NEBULA_PINK),
         focus_bar: Style::new().fg(STARLIGHT_YELLOW),
         block: Style::new().fg(Color::White),
-    },
-    town: Town {
-        river: Style::new().fg(GALAXY_BLUE_COLOR).bg(STELLAR_CYAN),
-        grass: Style::new().bg(COSMIC_GRAY).fg(STARLIGHT_YELLOW),
-        city: Style::new().bg(BLACK_HOLE).fg(COSMIC_GRAY),
-        earth: Style::new().bg(DARK_NEBULA).fg(MIDNIGHT_PURPLE),
-        desert: Style::new().bg(STARLIGHT_YELLOW).fg(DARK_NEBULA),
     },
 };
 
@@ -141,20 +117,9 @@ const EVERGREEN_FOREST: Theme = Theme {
         focus_bar: Style::new().fg(FOREST_GREEN),
         block: Style::new().fg(Color::White),
     },
-    town: Town {
-        river: Style::new().fg(DEEP_BLUE).bg(DARK_TEAL),
-        grass: Style::new().bg(FOREST_GREEN).fg(LIGHT_MOSS_GREEN),
-        city: Style::new().bg(CHARCOAL_BROWN_DARK).fg(Color::Gray),
-        earth: Style::new().bg(EARTH_BROWN).fg(CHARCOAL_BROWN),
-        desert: Style::new().bg(DARK_BEIGE).fg(CHARCOAL_BROWN_LIGHT),
-    },
 };
 
 const FOREST_GREEN: Color = Color::Rgb(34, 139, 34);
-const LIGHT_MOSS_GREEN: Color = Color::Rgb(129, 178, 111);
-const EARTH_BROWN: Color = Color::Rgb(101, 136, 33);
-const DARK_BEIGE: Color = Color::Rgb(181, 136, 99);
-const DARK_TEAL: Color = Color::Rgb(0, 51, 51);
 const CHARCOAL_BROWN: Color = Color::Rgb(89, 57, 47);
 const CHARCOAL_BROWN_DARK: Color = Color::Rgb(40, 28, 22);
 const CHARCOAL_BROWN_LIGHT: Color = Color::Rgb(140, 95, 75);
@@ -162,13 +127,9 @@ const EARTH_RED: Color = Color::Rgb(0xAD, 0x4B, 0x44);
 const LIGHT_RED: Color = Color::Rgb(0xFF, 0x77, 0x77);
 const FOCUS_GREEN: Color = Color::Rgb(0x17, 0xad, 0x52);
 const DARK_MOSS_GREEN: Color = Color::Rgb(0x2D, 0x33, 0x30);
-const LIGHT_SAND_COLOR: Color = Color::Rgb(255, 223, 186);
-const DEEP_BLUE: Color = Color::Rgb(127, 130, 180);
 const GALAXY_BLUE_COLOR: Color = Color::Rgb(25, 25, 112);
-const MIDNIGHT_PURPLE: Color = Color::Rgb(48, 25, 52);
 const STELLAR_CYAN: Color = Color::Rgb(0, 139, 139);
 const NEBULA_PINK: Color = Color::Rgb(219, 112, 147);
 const COSMIC_GRAY: Color = Color::Rgb(105, 105, 105);
 const STARLIGHT_YELLOW: Color = Color::Rgb(255, 223, 0);
 const DARK_NEBULA: Color = Color::Rgb(44, 62, 80);
-const BLACK_HOLE: Color = Color::Rgb(10, 10, 25);

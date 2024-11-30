@@ -10,7 +10,7 @@ use ratatui::{
 };
 
 use crate::{
-    application::{data::Data, history::History, main_menu::MainMenu, timer::Timer, town::Town},
+    application::{data::Data, history::History, main_menu::MainMenu, timer::Timer},
     infra::repositories::settings_repository::SettingsRepository,
     models::settings::Settings,
 };
@@ -21,7 +21,6 @@ pub struct App {
     pub main_menu: MainMenu,
     pub timer: Timer,
     pub history: History,
-    pub town: Town,
     pub data: Data,
     pub settings: Settings,
 }
@@ -31,7 +30,6 @@ pub enum Screen {
     #[default]
     MainMenu,
     Timer,
-    Town,
     History,
     Data,
     None,
@@ -59,7 +57,6 @@ impl App {
             timer: Timer::new(settings)?,
             main_menu: MainMenu::new(settings),
             history: History::new(settings)?,
-            town: Town::new(settings)?,
             data: Data::new(settings)?,
             settings,
         })
@@ -128,7 +125,6 @@ impl App {
             Screen::Timer => self.timer.handle_key_press(key)?,
             Screen::History => self.history.handle_key_press(key)?,
             Screen::Data => self.data.handle_key_press(key)?,
-            Screen::Town => self.town.handle_key_press(key)?,
             _ => key_press_result,
         };
         if result.0 != current_screen {
@@ -140,7 +136,6 @@ impl App {
                 match result.0 {
                     Screen::MainMenu => self.main_menu = MainMenu::new(self.settings),
                     Screen::Timer => self.timer = Timer::new(self.settings)?,
-                    Screen::Town => self.town = Town::new(self.settings)?,
                     Screen::History => self.history = History::new(self.settings)?,
                     Screen::Data => self.data = Data::new(self.settings)?,
                     Screen::None => {}
@@ -155,7 +150,6 @@ impl App {
     fn draw(&self, frame: &mut Frame, area: Rect) {
         if let Some(screen) = self.screen_stack.last() {
             match screen {
-                Screen::Town => self.town.draw(frame, area),
                 _ => frame.render_widget(self, area),
             }
         }
