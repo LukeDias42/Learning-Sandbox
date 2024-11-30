@@ -7,24 +7,28 @@ use ratatui::{
     Frame,
 };
 
-use crate::{
-    application::theme::THEME,
-    models::town_map::{Object, Tile, TownMap},
+use crate::models::{
+    settings::Settings,
+    town_map::{Object, Tile, TownMap},
 };
 
-use super::app::{KeyPressResult, Mode, RemoveFromStack, Screen};
+use super::{
+    app::{KeyPressResult, Mode, RemoveFromStack, Screen},
+    theme::Theme,
+};
 
-#[derive(Debug, Default, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Town {
     pub town_map: TownMap,
     pub cursor_x: u16,
     pub cursor_y: u16,
     pub vertical_offset: u16,
     pub horizontal_offset: u16,
+    settings: Settings,
 }
 
 impl Town {
-    pub fn new() -> Result<Self> {
+    pub fn new(settings: Settings) -> Result<Self> {
         let map = vec![vec![Tile::default(); 80]; 40];
         let city = TownMap::new(map, "Inland Town".to_string());
         Ok(Town {
@@ -33,6 +37,7 @@ impl Town {
             cursor_y: 0,
             vertical_offset: 0,
             horizontal_offset: 0,
+            settings,
         })
     }
 
@@ -102,6 +107,8 @@ impl Town {
     }
 
     pub fn draw(&self, frame: &mut Frame, area: Rect) {
+        let theme = Theme::new(self.settings.theme);
+
         let map_rows = self.town_map.map.len() as u16;
         let map_columns = self.town_map.map[0].len() as u16;
         let block_area = Rect::new(area.x, area.y, map_columns * 2 + 2, map_rows + 2);
@@ -109,7 +116,7 @@ impl Town {
             Block::new()
                 .title(self.town_map.name.clone())
                 .borders(Borders::ALL)
-                .style(THEME.logo),
+                .style(theme.logo),
             block_area,
         );
         let max_horz_tiles = ((area.width - 2) / 2) as usize;
@@ -130,16 +137,13 @@ impl Town {
                         let tile_area =
                             Rect::new(area.x + 1 + 2 * x as u16, area.y + 1 + y as u16, 2, 1);
                         frame.render_widget(
-                            Text::raw(tile.object.to_chars()).style(tile.floor.to_style()),
+                            Text::raw(tile.object.to_chars()).style(tile.floor.to_style(theme)),
                             tile_area,
                         );
                     });
             });
         frame.set_cursor_position(Position::new(
-            // Draw the cursor at the current position in the input field.
-            // This position is can be controlled via the left and right arrow key
             block_area.x + self.cursor_x * 2 + 1,
-            // Move one line down, from the border to the input line
             block_area.y + self.cursor_y + 1,
         ))
     }
