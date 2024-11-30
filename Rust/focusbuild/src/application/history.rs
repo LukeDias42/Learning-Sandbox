@@ -10,29 +10,31 @@ use ratatui::{
 
 use crate::{
     infra::repositories::focus_session_repository::FocusSessionRepository,
-    models::focus_session::FocusSession,
+    models::{focus_session::FocusSession, settings::Settings},
 };
 
 use super::{
     app::{KeyPressResult, Mode, RemoveFromStack, Screen},
-    theme::THEME,
+    theme::Theme,
 };
 
 pub struct History {
     focus_sessions: Vec<FocusSession>,
     scroll_offset: usize,
     pub max_visible: usize,
+    settings: Settings,
 }
 
 const ENTRY_WIDTH: u16 = 68;
 
 impl History {
-    pub fn new() -> Result<Self> {
+    pub fn new(settings: Settings) -> Result<Self> {
         let focus_sessions = FocusSessionRepository::new()?.select_many()?;
         let timer = Self {
             focus_sessions,
             scroll_offset: 0,
             max_visible: 1,
+            settings,
         };
         Ok(timer)
     }
@@ -41,11 +43,14 @@ impl History {
             KeyCode::Char('q') | KeyCode::Esc => {
                 KeyPressResult(Screen::MainMenu, Mode::Running, RemoveFromStack(true))
             }
-            KeyCode::Up | KeyCode::Char('k') => {
+            KeyCode::Char('g') | KeyCode::Char('G') => {
+                KeyPressResult(Screen::Data, Mode::Running, RemoveFromStack(true))
+            }
+            KeyCode::Up | KeyCode::Char('k') | KeyCode::Char('K') => {
                 self.scroll_offset -= if self.scroll_offset == 0 { 0 } else { 1 };
                 KeyPressResult(Screen::History, Mode::Running, RemoveFromStack(false))
             }
-            KeyCode::Down | KeyCode::Char('j') => {
+            KeyCode::Down | KeyCode::Char('j') | KeyCode::Char('J') => {
                 self.scroll_offset +=
                     if self.scroll_offset == self.focus_sessions.len() - self.max_visible {
                         0
@@ -57,11 +62,11 @@ impl History {
             _ => KeyPressResult(Screen::History, Mode::Running, RemoveFromStack(false)),
         })
     }
-    pub fn draw_entries(&self, area: Rect, buf: &mut Buffer) {
+    pub fn draw_entries(&self, area: Rect, buf: &mut Buffer, theme: Theme) {
         Block::new()
             .title("history")
             .borders(Borders::ALL)
-            .style(THEME.history.border)
+            .style(theme.history.border)
             .render(area, buf);
 
         let visible_sessions = self
@@ -92,7 +97,7 @@ impl History {
                 Block::default()
                     .title(format!("Session {id}"))
                     .borders(Borders::ALL),
-            ).style(THEME.history.style);
+            ).style(theme.history.style);
 
             let entry_area = Rect::new(area.x + 1, area.y + y_offset + 1, area.width - 2, 4);
 
@@ -102,20 +107,25 @@ impl History {
         }
     }
 
-    pub fn draw_keybinds(&self, area: Rect, buf: &mut Buffer) {
-        let keys = [("Quit", "Q"), ("Up", "K/↑"), ("Down", "J/↓")];
+    pub fn draw_keybinds(&self, area: Rect, buf: &mut Buffer, theme: Theme) {
+        let keys = [
+            ("Quit", "Q"),
+            ("Up", "K/↑"),
+            ("Down", "J/↓"),
+            ("Graph", "G"),
+        ];
 
         let spans: Vec<Span> = keys
             .iter()
             .flat_map(|(desc, key)| {
-                let key = Span::styled(format!(" {key} "), THEME.key_binding.key);
-                let desc = Span::styled(format!(" {desc} "), THEME.key_binding.description);
+                let key = Span::styled(format!(" {key} "), theme.key_binding.key);
+                let desc = Span::styled(format!(" {desc} "), theme.key_binding.description);
                 [key, desc]
             })
             .collect();
         Line::from(spans)
             .centered()
-            .style(THEME.key_binding.surrounding)
+            .style(theme.key_binding.surrounding)
             .render(area, buf);
     }
 
@@ -130,6 +140,8 @@ impl History {
 }
 impl Widget for &History {
     fn render(self, area: Rect, buf: &mut Buffer) {
+        let theme = Theme::new(self.settings.theme);
+
         let history_area = Rect::new(
             (area.width - ENTRY_WIDTH + 2) / 2,
             area.y + 1,
@@ -142,7 +154,7 @@ impl Widget for &History {
             history_area.width,
             3,
         );
-        self.draw_entries(history_area, buf);
-        self.draw_keybinds(keybinds_area, buf);
+        self.draw_entries(history_area, buf, theme);
+        self.draw_keybinds(keybinds_area, buf, theme);
     }
 }
