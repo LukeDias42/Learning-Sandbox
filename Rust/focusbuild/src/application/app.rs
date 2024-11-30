@@ -9,8 +9,10 @@ use ratatui::{
     buffer::Buffer, layout::Rect, prelude::CrosstermBackend, widgets::Widget, Frame, Terminal,
 };
 
-use crate::application::{
-    data::Data, history::History, main_menu::MainMenu, timer::Timer, town::Town,
+use crate::{
+    application::{data::Data, history::History, main_menu::MainMenu, timer::Timer, town::Town},
+    infra::repositories::settings_repository::SettingsRepository,
+    models::settings::Settings,
 };
 
 pub struct App {
@@ -21,6 +23,7 @@ pub struct App {
     pub history: History,
     pub town: Town,
     pub data: Data,
+    pub settings: Settings,
 }
 
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
@@ -49,16 +52,27 @@ impl App {
     pub fn new() -> Result<App> {
         let mut screen_stack: Vec<Screen> = Vec::new();
         screen_stack.push(Screen::default());
+        let settings = Self::get_settings()?;
         Ok(App {
             mode: Mode::default(),
             screen_stack,
-            timer: Timer::new()?,
-            main_menu: MainMenu::default(),
-            history: History::new()?,
-            town: Town::new()?,
-            data: Data::new()?,
+            timer: Timer::new(settings)?,
+            main_menu: MainMenu::new(settings),
+            history: History::new(settings)?,
+            town: Town::new(settings)?,
+            data: Data::new(settings)?,
+            settings,
         })
     }
+
+    fn get_settings() -> Result<Settings> {
+        let settings_repo = SettingsRepository::new()?;
+        Ok(match settings_repo.get_settings() {
+            Ok(settings) => settings,
+            Err(_) => settings_repo.insert_settings(Settings::default())?,
+        })
+    }
+
     pub fn run(mut self) -> Result<()> {
         let backend = CrosstermBackend::new(stdout());
         let terminal = Terminal::new(backend)?;
@@ -123,14 +137,13 @@ impl App {
             }
             let new_current_screen = self.screen_stack.last().unwrap_or(&Screen::None).to_owned();
             if new_current_screen != result.0 {
-                if result.0 == Screen::Timer {
-                    self.timer = Timer::new()?
-                }
-                if result.0 == Screen::History {
-                    self.history = History::new()?
-                }
-                if result.0 == Screen::Data {
-                    self.data = Data::new()?
+                match result.0 {
+                    Screen::MainMenu => self.main_menu = MainMenu::new(self.settings),
+                    Screen::Timer => self.timer = Timer::new(self.settings)?,
+                    Screen::Town => self.town = Town::new(self.settings)?,
+                    Screen::History => self.history = History::new(self.settings)?,
+                    Screen::Data => self.data = Data::new(self.settings)?,
+                    Screen::None => {}
                 }
                 self.screen_stack.push(result.0);
             }
