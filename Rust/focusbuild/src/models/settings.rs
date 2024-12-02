@@ -36,6 +36,23 @@ pub enum Theme {
     EvergreenForest,
 }
 
+impl Theme {
+    pub fn next(self) -> Self {
+        match self {
+            Self::BloodRiver => Self::GalaxyBlue,
+            Self::GalaxyBlue => Self::EvergreenForest,
+            Self::EvergreenForest => Self::BloodRiver,
+        }
+    }
+    pub fn prev(self) -> Self {
+        match self {
+            Self::BloodRiver => Self::EvergreenForest,
+            Self::GalaxyBlue => Self::BloodRiver,
+            Self::EvergreenForest => Self::GalaxyBlue,
+        }
+    }
+}
+
 impl FromStr for Theme {
     type Err = String;
 
@@ -71,6 +88,21 @@ pub enum Language {
     #[default]
     English,
     Portuguese,
+}
+
+impl Language {
+    pub fn next(self) -> Self {
+        match self {
+            Self::English => Self::Portuguese,
+            Self::Portuguese => Self::English,
+        }
+    }
+    pub fn prev(self) -> Self {
+        match self {
+            Self::English => Self::Portuguese,
+            Self::Portuguese => Self::English,
+        }
+    }
 }
 
 impl FromStr for Language {
@@ -109,6 +141,25 @@ pub enum FontSize {
     Large,
     Small,
     Tiny,
+}
+
+impl FontSize {
+    pub fn next(self) -> Self {
+        match self {
+            Self::Auto => Self::Large,
+            Self::Large => Self::Small,
+            Self::Small => Self::Tiny,
+            Self::Tiny => Self::Tiny,
+        }
+    }
+    pub fn prev(self) -> Self {
+        match self {
+            Self::Auto => Self::Tiny,
+            Self::Large => Self::Auto,
+            Self::Small => Self::Large,
+            Self::Tiny => Self::Small,
+        }
+    }
 }
 
 impl FromStr for FontSize {
