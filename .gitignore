@@ -356,3 +356,5 @@ ASALocalRun/
 healthchecksdb
 
 *.o
+
+*.db
