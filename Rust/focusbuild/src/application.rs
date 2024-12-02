@@ -1,6 +1,4 @@
 pub mod app;
-mod config;
-mod config_font;
 mod data;
 mod history;
 mod main_menu;

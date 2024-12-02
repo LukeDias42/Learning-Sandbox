@@ -15,8 +15,6 @@ use crate::{
     models::settings::Settings,
 };
 
-use super::config::Config;
-
 pub struct App {
     mode: Mode,
     screen_stack: Vec<Screen>,
@@ -25,7 +23,6 @@ pub struct App {
     pub history: History,
     pub data: Data,
     pub settings: Settings,
-    pub config: Config,
 }
 
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
@@ -35,7 +32,6 @@ pub enum Screen {
     Timer,
     History,
     Data,
-    Config,
     None,
 }
 
@@ -63,7 +59,6 @@ impl App {
             history: History::new(settings)?,
             data: Data::new(settings)?,
             settings,
-            config: Config::default(),
         })
     }
 
@@ -73,12 +68,6 @@ impl App {
             Ok(settings) => settings,
             Err(_) => settings_repo.insert_settings(Settings::default())?,
         })
-    }
-
-    fn update_settings(&mut self, settings: Settings) -> Result<()> {
-        let settings_repo = SettingsRepository::new()?;
-        self.settings = settings_repo.update_settings(settings)?;
-        Ok(())
     }
 
     pub fn run(mut self) -> Result<()> {
@@ -136,17 +125,11 @@ impl App {
             Screen::Timer => self.timer.handle_key_press(key)?,
             Screen::History => self.history.handle_key_press(key)?,
             Screen::Data => self.data.handle_key_press(key)?,
-            Screen::Config => self.data.handle_key_press(key)?,
             Screen::None => key_press_result,
         };
         if result.0 != current_screen {
             if result.2 .0 {
-                let current = self.screen_stack.pop().unwrap();
-                if current == Screen::Config {
-                    if self.config.saved {
-                        self.update_settings(self.config.settings)?;
-                    }
-                }
+                self.screen_stack.pop();
             }
             let new_current_screen = self.screen_stack.last().unwrap_or(&Screen::None).to_owned();
             if new_current_screen != result.0 {
@@ -155,7 +138,6 @@ impl App {
                     Screen::Timer => self.timer = Timer::new(self.settings)?,
                     Screen::History => self.history = History::new(self.settings)?,
                     Screen::Data => self.data = Data::new(self.settings)?,
-                    Screen::Config => self.config = Config::new(self.settings),
                     Screen::None => {}
                 }
                 self.screen_stack.push(result.0);
@@ -186,7 +168,6 @@ impl Widget for &App {
                 Screen::Timer => self.timer.render(area, buf),
                 Screen::History => self.history.render(area, buf),
                 Screen::Data => self.data.render(area, buf),
-                Screen::Config => self.config.render(area, buf),
                 Screen::None => {}
             }
         }

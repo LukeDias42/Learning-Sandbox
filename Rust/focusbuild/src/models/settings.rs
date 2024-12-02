@@ -12,7 +12,6 @@ use rusqlite::{
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Settings {
     pub theme: Theme,
-    pub language: Language,
     pub font_size: FontSize,
     pub focus_break_proportion: u16,
 }
@@ -21,7 +20,6 @@ impl Default for Settings {
     fn default() -> Self {
         Settings {
             theme: Theme::default(),
-            language: Language::default(),
             font_size: FontSize::default(),
             focus_break_proportion: 3,
         }
@@ -82,58 +80,6 @@ impl FromSql for Theme {
         Ok(value.as_str()?.parse().unwrap_or(Theme::default()))
     }
 }
-
-#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
-pub enum Language {
-    #[default]
-    English,
-    Portuguese,
-}
-
-impl Language {
-    pub fn next(self) -> Self {
-        match self {
-            Self::English => Self::Portuguese,
-            Self::Portuguese => Self::English,
-        }
-    }
-    pub fn prev(self) -> Self {
-        match self {
-            Self::English => Self::Portuguese,
-            Self::Portuguese => Self::English,
-        }
-    }
-}
-
-impl FromStr for Language {
-    type Err = String;
-
-    fn from_str(input: &str) -> Result<Language, Self::Err> {
-        match input {
-            "English" => Ok(Language::English),
-            "Portuguese" => Ok(Language::Portuguese),
-            _ => Err(format!("{input} is not a valid language")),
-        }
-    }
-}
-
-impl Display for Language {
-    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        write!(f, "{:?}", self)
-    }
-}
-impl ToSql for Language {
-    fn to_sql(&self) -> rusqlite::Result<ToSqlOutput<'_>> {
-        Ok(self.to_string().into())
-    }
-}
-
-impl FromSql for Language {
-    fn column_result(value: ValueRef<'_>) -> FromSqlResult<Self> {
-        Ok(value.as_str()?.parse().unwrap_or(Language::default()))
-    }
-}
-
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
 pub enum FontSize {
     #[default]
