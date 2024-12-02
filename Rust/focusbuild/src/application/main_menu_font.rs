@@ -28,7 +28,7 @@ impl Logo {
     fn new(logo: String) -> Self {
         let height = logo.lines().count() as u16;
         let width = logo.lines().last().unwrap_or("").chars().count() as u16;
-        Logo {
+        Self {
             width,
             height,
             text: logo,
@@ -64,7 +64,7 @@ impl KeyBinding {
             .map(|(key, desc)| (key.to_string(), desc.to_string()))
             .to_vec();
 
-        KeyBinding {
+        Self {
             width,
             height,
             longest_description,
@@ -221,12 +221,11 @@ __) |_(_| |  |_",
     ),
 ];
 
-// Calvin S
 const POMO_BUILD_LOGO_TINY: &str = "╔═╗┌─┐┌─┐┬ ┬┌─┐╔╗ ┬ ┬┬┬  ┌┬┐
 ╠╣ │ ││  │ │└─┐╠╩╗│ │││   ││
 ╚  └─┘└─┘└─┘└─┘╚═╝└─┘┴┴─┘─┴┘";
 
-// Big Fig
+// Calvin S
 const KEYBIND_STRINGS_TINY: [(&str, &str); 4] = [
     (
         "╔═╗
