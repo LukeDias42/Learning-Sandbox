@@ -19,8 +19,9 @@ use crate::{
 use super::{
     app::{KeyPressResult, Mode, RemoveFromStack, Screen},
     theme::Theme,
-    timer_font::TimerFont,
+    timer_font::{Digits, TimerFont},
 };
+
 pub struct Timer {
     stopwatch: Instant,
     focus_time: Vec<u64>,
@@ -79,44 +80,39 @@ impl Timer {
         digits.reverse();
         digits
     }
+
     pub fn timer_digits_size_vector(
         mut elapsed_seconds: i64,
-        digit_width_map: &Vec<(String, u16)>,
+        digits: &Digits,
     ) -> Vec<(String, u16)> {
         let mut timer_digits = Vec::new();
         if elapsed_seconds < 0 {
-            timer_digits.push((digit_width_map[11].0.to_string(), digit_width_map[11].1));
+            timer_digits.push((digits.minus_sign.clone(), digits.minus_sign_width));
             elapsed_seconds *= -1;
         }
 
         let hours = elapsed_seconds / 3600;
         if hours < 10 {
-            timer_digits.push((digit_width_map[0].0.to_string(), digit_width_map[0].1));
+            timer_digits.push((digits.digit_map[0].clone(), digits.digit_width));
             if hours == 0 {
-                timer_digits.push((digit_width_map[0].0.to_string(), digit_width_map[0].1));
+                timer_digits.push((digits.digit_map[0].clone(), digits.digit_width));
             }
         }
         for number in Timer::get_number_digits(hours) {
-            timer_digits.push((
-                digit_width_map[number].0.to_string(),
-                digit_width_map[number].1,
-            ));
+            timer_digits.push((digits.digit_map[number].clone(), digits.digit_width));
         }
-        timer_digits.push((digit_width_map[10].0.to_string(), digit_width_map[10].1));
+        timer_digits.push((digits.colon.clone(), digits.colon_width));
 
         let minutes = (elapsed_seconds / 60) - hours * 60;
 
         if minutes < 10 {
-            timer_digits.push((digit_width_map[0].0.to_string(), digit_width_map[0].1));
+            timer_digits.push((digits.digit_map[0].clone(), digits.digit_width));
             if minutes == 0 {
-                timer_digits.push((digit_width_map[0].0.to_string(), digit_width_map[0].1));
+                timer_digits.push((digits.digit_map[0].clone(), digits.digit_width));
             }
         }
         for number in Timer::get_number_digits(minutes) {
-            timer_digits.push((
-                digit_width_map[number].0.to_string(),
-                digit_width_map[number].1,
-            ));
+            timer_digits.push((digits.digit_map[number].clone(), digits.digit_width));
         }
         return timer_digits;
     }
@@ -174,7 +170,7 @@ impl Timer {
         let focus_block_area = Rect::new(
             area.x + 1,
             area.y + 1,
-            timer_font.digits.stopwatchs_width + 2 + timer_font.digits.gap * 6,
+            timer_font.digits.stopwatch_width + 2,
             timer_font.digits.height + 2,
         );
         self.draw_timer(
@@ -213,7 +209,7 @@ impl Timer {
         let balance_block_area = Rect::new(
             break_block_area.x + break_block_area.width,
             break_block_area.y,
-            timer_font.digits.balance_width + 2 + timer_font.digits.gap * 7,
+            timer_font.digits.balance_width + 2,
             timer_font.digits.height + 2,
         );
         let balance_seconds = self.get_focus_time() as i64 / 3 - self.get_break_time() as i64;
@@ -240,8 +236,7 @@ impl Timer {
             .title(title)
             .style(style)
             .render(area, buf);
-        let focus_digits =
-            Timer::timer_digits_size_vector(seconds, &timer_font.digits.digit_width_map);
+        let focus_digits = Timer::timer_digits_size_vector(seconds, &timer_font.digits);
         let mut current_x = area.x + 1 + timer_font.digits.gap;
         for (digit, size) in focus_digits {
             let focus_digit_area = Rect::new(
@@ -276,7 +271,7 @@ impl Widget for &Timer {
     fn render(self, area: Rect, buf: &mut Buffer) {
         let theme = Theme::new(self.settings.theme);
 
-        let timer_font = TimerFont::new(area.width, area.height);
+        let timer_font = TimerFont::new(area.width, area.height, self.is_focusing, self.settings);
         let timer_block_total_height = timer_font.digits.height + 4;
         let total_text_height = timer_block_total_height + 1 + timer_font.title.height;
         let x = ((area.width as i16 - timer_font.title.width as i16) / 2 + timer_font.title.offset)
@@ -288,12 +283,10 @@ impl Widget for &Timer {
             .render(title_area, buf);
 
         let timer_block_total_width =
-            (timer_font.digits.stopwatchs_width + 2 + timer_font.digits.gap * 6 + 2) * 2
-                + timer_font.digits.balance_width
-                + timer_font.digits.gap * 7;
+            (timer_font.digits.stopwatch_width + 2) * 2 + (timer_font.digits.balance_width + 2) + 2;
 
         let timers_area = Rect::new(
-            (area.width - timer_block_total_width) / 2 - 2,
+            (area.width - timer_block_total_width) / 2,
             title_area.y + title_area.height,
             timer_block_total_width,
             timer_block_total_height,
