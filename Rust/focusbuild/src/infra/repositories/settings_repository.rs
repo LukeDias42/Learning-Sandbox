@@ -33,6 +33,22 @@ impl SettingsRepository {
         )?;
         Ok(settings)
     }
+
+    pub fn update_settings(&self, settings: Settings) -> Result<Settings> {
+        self.db.conn.execute(
+            "UPDATE settings
+         SET theme = ?1, language = ?2, font_size = ?3, focus_break_proportion = ?4
+         WHERE id = 1",
+            params![
+                settings.theme,
+                settings.language,
+                settings.font_size,
+                settings.focus_break_proportion
+            ],
+        )?;
+        Ok(settings)
+    }
+
     pub fn get_settings(&self) -> Result<Settings> {
         let mut stmt = self.db.conn.prepare(
             "
