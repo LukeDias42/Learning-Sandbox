@@ -30,11 +30,11 @@ impl MainMenu {
             KeyCode::Char('s') | KeyCode::Char('S') => {
                 KeyPressResult(Screen::Timer, Mode::Running, RemoveFromStack(false))
             }
-            KeyCode::Char('h') | KeyCode::Char('H') => {
-                KeyPressResult(Screen::History, Mode::Running, RemoveFromStack(false))
-            }
             KeyCode::Char('d') | KeyCode::Char('D') => {
                 KeyPressResult(Screen::Data, Mode::Running, RemoveFromStack(false))
+            }
+            KeyCode::Char('c') | KeyCode::Char('C') => {
+                KeyPressResult(Screen::Config, Mode::Running, RemoveFromStack(false))
             }
             KeyCode::Char('q') | KeyCode::Char('Q') | KeyCode::Esc => {
                 KeyPressResult(Screen::None, Mode::Quit, RemoveFromStack(true))
@@ -43,7 +43,7 @@ impl MainMenu {
         })
     }
     pub fn draw_keybinds(&self, area: Rect, buf: &mut Buffer, theme: Theme) {
-        let main_menu_font = MainMenuFont::new(area.width, area.height, Settings::default());
+        let main_menu_font = MainMenuFont::new(area.width, area.height, self.settings);
         let x = main_menu_font.logo.offset
             + (area.width as i16 / 4
                 + (area.width as i16 / 2 - main_menu_font.logo.width as i16) / 2)
