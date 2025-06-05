@@ -45,3 +45,11 @@
     (let [end (+ start (* progress (dec num-terms)))]
     (/ (* (+ start end) num-terms) 2))))
 
+(defn hello
+  "Example to illustrate how map destructring works"
+  [{:keys [first-name middle-name last-name]
+    :or {first-name "sir" middle-name nil last-name "something"}}]
+  (let [strings (remove nil? ["Hello," first-name middle-name last-name])]
+    (clojure.string/join " " strings)))
+
+
