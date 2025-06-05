@@ -36,14 +36,13 @@
 
 (defn arithmetic-progression
   "Example to illustrate how arity works"
-  ([end]
-    (/ (*(+ 1 end) end) 2))
-  ([start end]
-    ( let [num-terms (inc (- end start))]
-    (/ (* (+ start end) num-terms) 2)))
   ([start progress num-terms]
     (let [end (+ start (* progress (dec num-terms)))]
-    (/ (* (+ start end) num-terms) 2))))
+    (/ (* (+ start end) num-terms) 2)))
+  ([start end]
+    (arithmetic-progression start 1 (inc (- end start))))
+  ([end]
+    (arithmetic-progression 1 end)))
 
 (defn hello
   "Example to illustrate how map destructring works"
