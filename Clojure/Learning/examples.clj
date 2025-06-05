@@ -23,3 +23,14 @@
           (recur b (+ a b) (dec x))
       a)))
 
+(defn arith-progress [sum x]
+  (if (pos? x)
+    (recur (+ sum x) (dec x))
+    sum))
+
+(defn loop-arith-progress [initial-x]
+  (loop [sum 0, x initial-x]
+    (if (pos? x)
+      (recur (+ sum x) (dec x))
+      sum)))
+
