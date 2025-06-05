@@ -34,3 +34,14 @@
       (recur (+ sum x) (dec x))
       sum)))
 
+(defn arithmetic-progression
+  "Example to illustrate how arity works"
+  ([end]
+    (/ (*(+ 1 end) end) 2))
+  ([start end]
+    ( let [num-terms (inc (- end start))]
+    (/ (* (+ start end) num-terms) 2)))
+  ([start progress num-terms]
+    (let [end (+ start (* progress (dec num-terms)))]
+    (/ (* (+ start end) num-terms) 2))))
+
