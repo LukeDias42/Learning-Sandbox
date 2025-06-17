@@ -21,7 +21,20 @@
         (recur (inc i)))))
     board))
 
+(defn clear-screen []
+  (print "\u001b[2J\u001b[H")
+  (flush))
+
+(defn reset-cursor []
+  (print "\u001b[H")
+  (flush))
+
+(defn wait-ms [ms]
+  (Thread/sleep ms))
+
 (defn game-loop [initial-board rows cols]
+  (clear-screen)
+    (reset-cursor)
     (print-board board rows cols)
 
 (defn game-of-life [rows cols initial-alive-percentage]
