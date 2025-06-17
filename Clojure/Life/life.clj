@@ -59,10 +59,29 @@
             (and
                   (and (< x (dec cols)) (< y (dec rows)))
                   (aget board (inc (+ pos cols))))])))) ; down-right
+
+; alive with < 2 neighbors - dies
+; alive with 2 or 3 neighbors - lives
+; alive with > 3 neighbors - dies
+; dead with = 3 neighbors - becomes alive
+(defn update-board [board rows cols]
+  (let [new-board (make-array Boolean/TYPE (* rows cols))]
+    (loop [i 0]
+      (if (< i (* rows cols))
+        (let [neighbors (count-neighbors board rows cols i) alive (aget board i)]
+          ; (println "pos: " i " neighbors: " neighbors " is alive: " alive)
+          (aset new-board i (or
+                (and alive (and (> neighbors 1) (< neighbors 4)))
+                (and (not alive) (= neighbors 3))))
+        (recur (inc i)))))
+    new-board))
+
 (defn game-loop [initial-board rows cols]
   (clear-screen)
+  (loop [board initial-board]
     (reset-cursor)
     (print-board board rows cols)
+    (recur (update-board board rows cols))))
 
 (defn game-of-life [rows cols initial-alive-percentage]
   (print "\u001b[?25l")
