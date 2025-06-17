@@ -32,6 +32,33 @@
 (defn wait-ms [ms]
   (Thread/sleep ms))
 
+(defn count-neighbors [board rows cols pos]
+  (let [x (mod pos cols) y (quot pos cols)]
+    (count (filter true? [
+            (and
+                (and (> x 0) (> y 0))
+                (aget board (dec (- pos cols))))
+            (and
+                  (> y 0)
+                  (aget board (- pos cols)))
+            (and
+                  (and (< x (dec cols)) (> y 0))
+                  (aget board (inc (- pos cols))))
+            (and
+                  (> x 0)
+                  (aget board (dec pos)))
+            (and
+                  (< x (dec cols))
+                  (aget board (inc pos)))
+            (and
+                  (and (> x 0) (< y (dec rows)))
+                  (aget board (dec (+ pos cols))))
+            (and
+                  (< y (dec rows))
+                  (aget board (+ pos cols)))
+            (and
+                  (and (< x (dec cols)) (< y (dec rows)))
+                  (aget board (inc (+ pos cols))))])))) ; down-right
 (defn game-loop [initial-board rows cols]
   (clear-screen)
     (reset-cursor)
